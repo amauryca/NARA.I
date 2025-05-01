@@ -1,0 +1,135 @@
+This prompt defines exactly what files to generate, how to structure them, and which free web APIs to leverage. It specifies a soft teal and lavender palette for the homepage, aquamarine and mint for the emotion page, and pale lavender with mint accents for the chatbot. It instructs adding standard favicon <link> tags for broad browser support. It hides any on-screen emotion labels or dashboards but wires the “Start Emotion AI” button to run face-api.js and Web Speech API for detection and transcription. Finally, it uses the Web Speech API’s speechSynthesis interface to speak AI responses aloud, ensuring full interactivity without external paid services.
+
+Prompt for AI Code Generator
+Project Name: NARA.I – AI-Driven Emotion Recognition & Mental Health Support
+Output:
+
+index.html (Homepage)
+
+emotion.html (Emotion Recognition AI)
+
+chatbot.html (Therapeutic Chatbot AI)
+
+/css/styles.css
+
+/js/home.js, emotion.js, chatbot.js
+
+favicon.ico and favicon.svg in project root
+
+1. Homepage (index.html)
+Layout & Navigation:
+
+Use a full-width hero with title “NARA.I: Empathy in Action” and subtitle.
+
+Two large buttons (id="startEmotionBtn", id="openChatbotBtn") linking to emotion.html and chatbot.html respectively 
+Bungalow Web Design
+.
+
+No images; use CSS only for visuals.
+
+Include in <head>:
+
+html
+Copy
+Edit
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">  
+<link rel="apple-touch-icon" href="favicon.svg">
+for broad browser favicon support 
+Medium
+.
+
+Design Palette:
+
+Background: Soft teal #D6F6F0 
+The Agency
+.
+
+Buttons & accents: Lavender #E8EAF6 
+High Five Design Co.
+.
+
+Typography: Nunito or Open Sans, dark gray text on light background for ≥4.5:1 contrast 
+Simour Design
+.
+
+2. Emotion Recognition AI (emotion.html)
+Start Button:
+
+html
+Copy
+Edit
+<button id="startEmotionBtn">Start Emotion AI</button>
+triggers emotion.js to:
+
+Load face-api.js models from /models (no overlays) 
+W3Schools.com
+.
+
+Start webcam (navigator.mediaDevices.getUserMedia({ video: true })) and speech recognition (new SpeechRecognition()) without displaying any live emotion labels.
+
+On each face detection and transcription, POST combined results to /api/generate (serverless proxy) and receive a response.
+
+Use speechSynthesis to speak the response aloud:
+
+js
+Copy
+Edit
+const utter = new SpeechSynthesisUtterance(responseText);
+speechSynthesis.speak(utter);
+``` :contentReference[oaicite:6]{index=6}.  
+Design Palette:
+
+Page BG: Light aquamarine #E0F7FA 
+Progress.com
+.
+
+Controls panels: Mint green #E8F5E9 
+Bethany Works® LLC
+.
+
+Hide any on-screen emotion data; only auditory feedback.
+
+3. Therapeutic Chatbot AI (chatbot.html)
+Chat UI:
+
+<form id="chatForm"><input id="chatInput"><button>Send</button></form>
+
+Append user/bot bubbles above form; no images, pure CSS.
+
+Behavior:
+
+On submit, POST { input: chatInput.value } to /api/generate, stream text back, and speak via speechSynthesis.
+
+Design Palette:
+
+BG: Pale lavender #F3E5F5 
+High Five Design Co.
+.
+
+Bubbles & input borders: Mint accents #C8E6C9 
+Pinterest
+.
+
+4. Free, Client-Only & Browser APIs
+Face Detection: face-api.js (client-side only) 
+W3Schools.com
+.
+
+Voice Recognition & TTS: Web Speech API—SpeechRecognition and speechSynthesis (no cost) 
+MDN Web Docs
+Addpipe
+.
+
+No Paid Services: All processing is on-device or via your serverless free endpoints.
+
+5. Favicon & Accessibility
+Add <link rel="icon"> tags as above; provide both .ico and .svg for compatibility 
+MDN Web Docs
+.
+
+Ensure ARIA labels on buttons and form controls.
+
+Use responsive CSS (mobile-first flex/grid).
+
+Result: A three-page, fully interactive, free NARA.I web app, with no emotion overlays, therapeutic color schemes, favicons, and AI that speaks responses—all generated in one go.
