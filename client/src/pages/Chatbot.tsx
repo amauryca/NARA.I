@@ -1,5 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { generateGeminiResponse } from "@/lib/gemini-api";
+import { speakText } from "@/lib/text-to-speech";
+import { Settings } from "lucide-react";
+import { AgeGroupSelector } from "@/components/AgeGroupSelector";
+import { VoiceSelector } from "@/components/VoiceSelector";
+import { AgeGroup } from "@shared/types/index";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface ChatMessage {
   id: string;
@@ -19,6 +27,10 @@ export default function Chatbot() {
   ]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('default');
+  const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -72,8 +84,8 @@ export default function Chatbot() {
         Respond in the first person as if you are NARA. Keep your response concise (2-3 sentences).
       `;
       
-      // Generate response from Gemini
-      const botResponse = await generateGeminiResponse(prompt);
+      // Generate response from Gemini with age-appropriate context
+      const botResponse = await generateGeminiResponse(prompt, selectedAgeGroup);
       
       // Add bot message
       const botMessage: ChatMessage = {
@@ -85,10 +97,9 @@ export default function Chatbot() {
       
       setMessages(prev => [...prev, botMessage]);
       
-      // Speak the response
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(botResponse);
-        speechSynthesis.speak(utterance);
+      // Speak the response using our custom text-to-speech functionality
+      if (textToSpeechEnabled) {
+        speakText(botResponse, selectedVoiceId);
       }
     } catch (error) {
       console.error("Error getting chatbot response:", error);
@@ -110,12 +121,55 @@ export default function Chatbot() {
   return (
     <section className="bg-[#F3E5F5] min-h-[90vh]">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Therapeutic Chatbot</h1>
-          <p className="text-lg max-w-2xl mx-auto">
-            Chat with our AI therapist for support, guidance, and a compassionate conversation.
-          </p>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold">Therapeutic Chatbot</h1>
+          <Button
+            onClick={() => setShowSettings(!showSettings)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Settings size={18} />
+            {showSettings ? 'Hide Settings' : 'Settings'}
+          </Button>
         </div>
+        
+        <p className="text-lg max-w-2xl mb-6">
+          Chat with our AI therapist for support, guidance, and a compassionate conversation.
+        </p>
+        
+        {/* Settings Panel */}
+        {showSettings && (
+          <div className="bg-white rounded-xl shadow-md p-4 md:p-6 mb-6">
+            <h2 className="text-xl font-bold mb-4">AI Assistant Settings</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <AgeGroupSelector 
+                onAgeGroupChange={setSelectedAgeGroup} 
+                initialAgeGroup={selectedAgeGroup}
+              />
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                  <h3 className="text-lg font-medium mb-3">Voice Settings</h3>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Switch
+                      id="text-to-speech"
+                      checked={textToSpeechEnabled}
+                      onCheckedChange={setTextToSpeechEnabled}
+                    />
+                    <Label htmlFor="text-to-speech">Enable Text-to-Speech</Label>
+                  </div>
+                  
+                  {textToSpeechEnabled && (
+                    <VoiceSelector
+                      onVoiceChange={setSelectedVoiceId}
+                      initialVoiceId={selectedVoiceId}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           {/* Chat Messages Container */}
