@@ -45,7 +45,7 @@ export default function Footer() {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1, duration: 0.5 }}
         >
-          © {currentYear} NARA.I. All rights reserved.
+          © {currentYear} MaST Research Institute. All rights reserved.
         </motion.div>
       </div>
     </motion.footer>

@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import BackgroundAnimation from "@/components/BackgroundAnimation";
 
 export default function Home() {
   const containerVariants = {
@@ -26,7 +27,8 @@ export default function Home() {
   };
 
   return (
-    <section className="bg-gradient-to-b from-[#D6F6F0] to-[#e0f2ff] min-h-[90vh] flex items-center justify-center py-10">
+    <section className="bg-gradient-to-b from-[#D6F6F0] to-[#e0f2ff] min-h-[90vh] flex items-center justify-center py-10 relative overflow-hidden">
+      <BackgroundAnimation />
       <motion.div 
         className="container mx-auto px-6 py-10 max-w-5xl"
         variants={containerVariants}
