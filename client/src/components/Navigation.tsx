@@ -14,34 +14,28 @@ export default function Navigation() {
     >
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
-          <Link href="/">
-            <a className="cursor-pointer">
+          <div className="cursor-pointer">
+            <Link href="/">
               <Logo />
-            </a>
-          </Link>
+            </Link>
+          </div>
           
           <div className="flex space-x-2 md:space-x-4">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/">
-                <a className={`px-3 py-1.5 rounded-full text-sm transition hover:bg-gray-100 ${location === "/" ? "bg-purple-100 text-purple-700" : ""}`}>
-                  Home
-                </a>
+              <Link href="/" className={`px-3 py-1.5 rounded-full text-sm transition hover:bg-gray-100 ${location === "/" ? "bg-purple-100 text-purple-700" : ""}`}>
+                Home
               </Link>
             </motion.div>
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/emotion">
-                <a className={`px-3 py-1.5 rounded-full text-sm transition hover:bg-gray-100 ${location === "/emotion" ? "bg-purple-100 text-purple-700" : ""}`}>
-                  Emotion AI
-                </a>
+              <Link href="/emotion" className={`px-3 py-1.5 rounded-full text-sm transition hover:bg-gray-100 ${location === "/emotion" ? "bg-purple-100 text-purple-700" : ""}`}>
+                Emotion AI
               </Link>
             </motion.div>
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/chatbot">
-                <a className={`px-3 py-1.5 rounded-full text-sm transition hover:bg-gray-100 ${location === "/chatbot" ? "bg-purple-100 text-purple-700" : ""}`}>
-                  Chatbot
-                </a>
+              <Link href="/chatbot" className={`px-3 py-1.5 rounded-full text-sm transition hover:bg-gray-100 ${location === "/chatbot" ? "bg-purple-100 text-purple-700" : ""}`}>
+                Chatbot
               </Link>
             </motion.div>
           </div>

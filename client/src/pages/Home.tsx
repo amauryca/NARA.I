@@ -97,13 +97,15 @@ export default function Home() {
               Our AI analyses your facial expressions and voice to understand how you're feeling, providing compassionate responses.
             </p>
             <Link href="/emotion">
-              <motion.a 
-                className="inline-block bg-[#E0F7FA] hover:bg-[#E8F5E9] text-[#333333] font-semibold py-3 px-8 rounded-full transition cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Start Emotion AI
-              </motion.a>
+              <div className="inline-block">
+                <motion.div
+                  className="bg-[#E0F7FA] hover:bg-[#E8F5E9] text-[#333333] font-semibold py-3 px-8 rounded-full transition cursor-pointer"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Start Emotion AI
+                </motion.div>
+              </div>
             </Link>
           </motion.div>
           
@@ -152,13 +154,15 @@ export default function Home() {
               Have a conversation with our AI therapist designed to provide support, guidance, and a compassionate listening ear.
             </p>
             <Link href="/chatbot">
-              <motion.a 
-                className="inline-block bg-[#F3E5F5] hover:bg-[#C8E6C9] text-[#333333] font-semibold py-3 px-8 rounded-full transition cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Open Chatbot
-              </motion.a>
+              <div className="inline-block">
+                <motion.div
+                  className="bg-[#F3E5F5] hover:bg-[#C8E6C9] text-[#333333] font-semibold py-3 px-8 rounded-full transition cursor-pointer"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Open Chatbot
+                </motion.div>
+              </div>
             </Link>
           </motion.div>
         </div>
