@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -34,36 +34,7 @@ export default function Footer() {
             <p className="flex items-center text-gray-300 mb-2">
               Created with <Heart className="h-4 w-4 mx-1 text-red-500" /> by Amaury Castillo-Acevedo
             </p>
-            <div className="flex space-x-4 mt-2">
-              <motion.a 
-                href="https://github.com" 
-                target="_blank"
-                rel="noopener noreferrer" 
-                className="text-gray-400 hover:text-white transition-colors"
-                whileHover={{ scale: 1.2, rotate: 5 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Github className="h-5 w-5" />
-              </motion.a>
-              <motion.a 
-                href="https://linkedin.com" 
-                target="_blank"
-                rel="noopener noreferrer" 
-                className="text-gray-400 hover:text-white transition-colors"
-                whileHover={{ scale: 1.2, rotate: 5 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Linkedin className="h-5 w-5" />
-              </motion.a>
-              <motion.a 
-                href="mailto:example@example.com" 
-                className="text-gray-400 hover:text-white transition-colors"
-                whileHover={{ scale: 1.2, rotate: 5 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Mail className="h-5 w-5" />
-              </motion.a>
-            </div>
+
           </motion.div>
         </div>
         
