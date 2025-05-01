@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base colors from the original theme */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    
+    /* NARA.I specific colors */
+    --home-bg: 168 66% 90%;
+    --home-accent: 236 33% 94%;
+    --emotion-bg: 186 65% 93%;
+    --emotion-control: 120 44% 94%;
+    --chatbot-bg: 293 42% 93%;
+    --chatbot-accent: 120 27% 83%;
+    --text-dark: 0 0% 20%;
+    
+    --radius: 0.5rem;
+  }
+ 
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-nunito text-text-dark bg-background antialiased;
+  }
+}
+
+@layer components {
+  .chat-bubble {
+    @apply relative max-w-[80%] mb-3 p-3 p-4 rounded-[18px] animate-fadeIn;
+  }
+  
+  .user-bubble {
+    @apply rounded-br-[4px] ml-auto bg-home-accent;
+  }
+  
+  .bot-bubble {
+    @apply rounded-bl-[4px] mr-auto bg-chatbot-accent;
+  }
+  
+  .video-container {
+    @apply bg-black bg-opacity-10 rounded-[10px] overflow-hidden;
+  }
+  
+  .camera-placeholder {
+    @apply aspect-video bg-gray-100 relative;
+    background-image: 
+      linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%), 
+      linear-gradient(-45deg, rgba(0,0,0,0.05) 25%, transparent 25%), 
+      linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.05) 75%), 
+      linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.05) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  
+  .camera-placeholder::before {
+    content: 'Camera Feed';
+    @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
