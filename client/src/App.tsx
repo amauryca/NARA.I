@@ -7,6 +7,7 @@ import Home from "@/pages/Home";
 import EmotionAI from "@/pages/EmotionAI";
 import Chatbot from "@/pages/Chatbot";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <main className="flex-grow">
           <Router />
         </main>
+        <Footer />
       </div>
       <Toaster />
     </QueryClientProvider>
