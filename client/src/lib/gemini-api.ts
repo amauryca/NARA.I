@@ -5,7 +5,7 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAkFJjQBTAoAHfxG9mtQbqr70njMip4lpQ';
 
 // Function to generate a response from Gemini API via our backend proxy
-export const generateGeminiResponse = async (prompt: string): Promise<string> => {
+export const generateGeminiResponse = async (prompt: string, ageGroup?: string): Promise<string> => {
   try {
     // Make API request to backend proxy
     const response = await fetch('/api/generate', {
@@ -15,7 +15,8 @@ export const generateGeminiResponse = async (prompt: string): Promise<string> =>
       },
       body: JSON.stringify({ 
         prompt,
-        apiKey: GEMINI_API_KEY 
+        apiKey: GEMINI_API_KEY,
+        ageGroup
       })
     });
     

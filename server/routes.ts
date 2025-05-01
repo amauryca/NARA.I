@@ -7,7 +7,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API route for generating responses using the Gemini API
   app.post('/api/generate', async (req, res) => {
     try {
-      const { prompt, apiKey } = req.body;
+      const { prompt, apiKey, ageGroup } = req.body;
       
       if (!prompt) {
         return res.status(400).json({ error: 'Missing prompt parameter' });
@@ -29,13 +29,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use the updated model name
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       
-      // Generate content using the new API
-      const result = await model.generateContent(prompt, {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 1024
-      });
+      // Prepare a context based on the age group
+      let contextPrompt = prompt;
+      
+      if (ageGroup) {
+        // Add age-appropriate context to the prompt
+        switch (ageGroup) {
+          case 'child':
+            contextPrompt = `You are speaking to a child (5-12 years old). Use simple vocabulary, short sentences, and be encouraging. Explain concepts in a fun, engaging way using examples they can relate to. Avoid complex topics and be friendly and nurturing. Here's what they said: "${prompt}"`;
+            break;
+          case 'teen':
+            contextPrompt = `You are speaking to a teenager (13-17 years old). Use relatable language but don't try too hard to be cool. Be supportive and provide guidance without being condescending. Acknowledge their growing independence while still providing clear explanations. Here's what they said: "${prompt}"`;
+            break;
+          case 'young':
+            contextPrompt = `You are speaking to a young adult (18-25 years old). Be conversational and relatable. You can use contemporary references and a more casual tone. Provide thoughtful insights while respecting their autonomy and intelligence. Here's what they said: "${prompt}"`;
+            break;
+          case 'adult':
+            contextPrompt = `You are speaking to an adult (26-59 years old). Use a balanced, mature tone. Be straightforward and provide comprehensive information. You can discuss complex topics and use professional language. Here's what they said: "${prompt}"`;
+            break;
+          case 'senior':
+            contextPrompt = `You are speaking to a senior (60+ years old). Be clear and respectful, not condescending. Use a slightly slower pace, avoid unnecessary jargon, and provide context for technical terms. Be patient and thorough in your explanations. Here's what they said: "${prompt}"`;
+            break;
+          default:
+            // Use the original prompt if age group is not recognized
+            break;
+        }
+      }
+      
+      console.log(`Generating response for age group: ${ageGroup || 'default'}`);
+      
+      // Generate content using the new API with age-appropriate context
+      const result = await model.generateContent(contextPrompt);
 
       const response = await result.response;
       const generatedText = response.text() || "I'm sorry, I couldn't generate a response.";
