@@ -2,6 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { loadFaceApiModels, detectFace } from "@/lib/face-api";
 import { startSpeechRecognition, stopSpeechRecognition } from "@/lib/speech-api";
 import { generateGeminiResponse } from "@/lib/gemini-api";
+import { speakText } from "@/lib/text-to-speech";
+import { Settings } from "lucide-react";
+import { AgeGroupSelector } from "@/components/AgeGroupSelector";
+import { VoiceSelector } from "@/components/VoiceSelector";
+import { AgeGroup } from "@shared/types/index";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function EmotionAI() {
   const [isRunning, setIsRunning] = useState(false);
@@ -9,6 +17,10 @@ export default function EmotionAI() {
   const [response, setResponse] = useState("AI responses will appear here once you begin the session.");
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('default');
+  const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -84,16 +96,15 @@ export default function EmotionAI() {
         Keep the response conversational, warm and helpful. Don't mention the technical details of the analysis.
       `;
       
-      // Generate a response using Gemini API
-      const aiResponse = await generateGeminiResponse(prompt);
+      // Generate a response using Gemini API with age-appropriate context
+      const aiResponse = await generateGeminiResponse(prompt, selectedAgeGroup);
       
       // Update the UI with the response
       setResponse(aiResponse);
       
-      // Speak the response using the Web Speech API
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(aiResponse);
-        speechSynthesis.speak(utterance);
+      // Speak the response using our custom text-to-speech functionality
+      if (textToSpeechEnabled) {
+        speakText(aiResponse, selectedVoiceId);
       }
     } catch (error) {
       console.error("Error processing emotion data:", error);
@@ -199,12 +210,55 @@ export default function EmotionAI() {
   return (
     <section className="bg-[#E0F7FA] min-h-[90vh]">
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Emotion Recognition AI</h1>
-          <p className="text-lg max-w-3xl mx-auto">
-            Our AI will analyze your expressions and voice, responding with therapeutic insights.
-          </p>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold">Emotion Recognition AI</h1>
+          <Button
+            onClick={() => setShowSettings(!showSettings)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Settings size={18} />
+            {showSettings ? 'Hide Settings' : 'Settings'}
+          </Button>
         </div>
+        
+        <p className="text-lg max-w-3xl mb-6">
+          Our AI will analyze your expressions and voice, responding with therapeutic insights.
+        </p>
+        
+        {/* Settings Panel */}
+        {showSettings && (
+          <div className="bg-white rounded-xl shadow-md p-4 md:p-6 mb-6">
+            <h2 className="text-xl font-bold mb-4">AI Assistant Settings</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <AgeGroupSelector 
+                onAgeGroupChange={setSelectedAgeGroup} 
+                initialAgeGroup={selectedAgeGroup}
+              />
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                  <h3 className="text-lg font-medium mb-3">Voice Settings</h3>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Switch
+                      id="emotion-text-to-speech"
+                      checked={textToSpeechEnabled}
+                      onCheckedChange={setTextToSpeechEnabled}
+                    />
+                    <Label htmlFor="emotion-text-to-speech">Enable Text-to-Speech</Label>
+                  </div>
+                  
+                  {textToSpeechEnabled && (
+                    <VoiceSelector
+                      onVoiceChange={setSelectedVoiceId}
+                      initialVoiceId={selectedVoiceId}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-8 md:col-start-3">
