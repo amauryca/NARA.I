@@ -4,7 +4,7 @@
 // Use import.meta.env for client-side environment variables in Vite
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyAkFJjQBTAoAHfxG9mtQbqr70njMip4lpQ';
 
-// Function to generate a response from Gemini API
+// Function to generate a response from Gemini API via our backend proxy
 export const generateGeminiResponse = async (prompt: string): Promise<string> => {
   try {
     // Make API request to backend proxy

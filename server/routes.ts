@@ -19,59 +19,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!geminiApiKey) {
         return res.status(400).json({ error: 'Missing API key' });
       }
+
+      // Import the Google generative AI library
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
       
-      // Define API URL for Gemini
-      const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiApiKey}`;
+      // Initialize the Google Generative AI client
+      const genAI = new GoogleGenerativeAI(geminiApiKey);
       
-      // Prepare the request payload
-      const payload = {
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        }
-      };
+      // Use the updated model name
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       
-      // Make the API call to Gemini
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+      // Generate content using the new API
+      const result = await model.generateContent(prompt, {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024
       });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Gemini API error:', errorText);
-        return res.status(response.status).json({ 
-          error: `Gemini API error: ${response.statusText}`,
-          details: errorText
-        });
-      }
-      
-      const data = await response.json();
-      
-      // Extract the generated text from the response
-      let generatedText = "I'm sorry, I couldn't generate a response.";
-      
-      if (data.candidates && 
-          data.candidates[0] && 
-          data.candidates[0].content && 
-          data.candidates[0].content.parts && 
-          data.candidates[0].content.parts[0]) {
-        generatedText = data.candidates[0].content.parts[0].text || generatedText;
-      }
+
+      const response = await result.response;
+      const generatedText = response.text() || "I'm sorry, I couldn't generate a response.";
       
       // Send the response back to the client
       return res.json({ response: generatedText });
