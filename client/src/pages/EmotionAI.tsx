@@ -22,6 +22,8 @@ export default function EmotionAI() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('default');
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
+  const [crisisSeverity, setCrisisSeverity] = useState<'severe' | 'moderate' | null>(null);
+  const [showEmergencyResources, setShowEmergencyResources] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -86,6 +88,13 @@ export default function EmotionAI() {
     setIsLoading(true);
     
     try {
+      // Check for crisis content in the speech
+      const detectedCrisis = detectCrisisContent(speechText);
+      if (detectedCrisis) {
+        setCrisisSeverity(detectedCrisis);
+        setShowEmergencyResources(true);
+      }
+
       // Create a prompt for Gemini API that includes the face and speech data
       const prompt = `
         As a therapeutic AI, analyze this data:
@@ -95,17 +104,25 @@ export default function EmotionAI() {
         
         Provide a compassionate, supportive response that addresses the emotional state observed. 
         Keep the response conversational, warm and helpful. Don't mention the technical details of the analysis.
+
+        If the speech indicates self-harm, suicide, or other concerning content, provide a supportive response that encourages the person to seek professional help.
       `;
       
-      // Generate a response using Gemini API with age-appropriate context
-      const aiResponse = await generateGeminiResponse(prompt, selectedAgeGroup);
+      // Generate a response using Gemini API with age-appropriate context and crisis detection
+      const geminiResponse = await generateResponseWithCrisisDetection(prompt, selectedAgeGroup);
       
       // Update the UI with the response
-      setResponse(aiResponse);
+      setResponse(geminiResponse.response);
+      
+      // If crisis is detected in the API response but not in our local check
+      if (geminiResponse.crisisSeverity && !detectedCrisis) {
+        setCrisisSeverity(geminiResponse.crisisSeverity);
+        setShowEmergencyResources(true);
+      }
       
       // Speak the response using our custom text-to-speech functionality
       if (textToSpeechEnabled) {
-        speakText(aiResponse, selectedVoiceId);
+        speakText(geminiResponse.response, selectedVoiceId);
       }
     } catch (error) {
       console.error("Error processing emotion data:", error);
@@ -206,6 +223,11 @@ export default function EmotionAI() {
     // Update UI
     setIsRunning(false);
     setStatus("Emotion AI stopped. Click Start to begin again.");
+  };
+  
+  // Function to handle closing the emergency resources panel
+  const handleCloseEmergencyResources = () => {
+    setShowEmergencyResources(false);
   };
 
   return (
@@ -318,6 +340,13 @@ export default function EmotionAI() {
           </p>
         </div>
       </div>
+      
+      {/* Emergency Resources */}
+      <EmergencyResources 
+        show={showEmergencyResources}
+        onClose={handleCloseEmergencyResources}
+        severity={crisisSeverity || 'moderate'}
+      />
     </section>
   );
 }
