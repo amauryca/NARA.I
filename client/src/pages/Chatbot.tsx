@@ -39,8 +39,16 @@ export default function Chatbot() {
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current && chatContainerRef.current) {
+      // Adding a slight delay allows the DOM to update before scrolling
+      const timer = setTimeout(() => {
+        // Instead of scrolling the entire page, only scroll the chat container
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [messages]);
 
@@ -84,6 +92,11 @@ export default function Chatbot() {
     
     if (!inputText.trim()) return;
     
+    // Save the current scroll position
+    const chatContainer = chatContainerRef.current;
+    const wasAtBottom = chatContainer ? 
+      chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 50 : true;
+    
     // Validate the input for security
     if (!validateInput(inputText)) {
       // Add a system message about invalid input
@@ -102,6 +115,17 @@ export default function Chatbot() {
       }, systemMessage]);
       
       setInputText("");
+      
+      // Only auto-scroll if we were already at the bottom
+      if (!wasAtBottom && chatContainer) {
+        // Prevent auto-scrolling by restoring previous position after a brief delay
+        setTimeout(() => {
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight - chatContainer.clientHeight;
+          }
+        }, 150);
+      }
+      
       return;
     }
     
@@ -116,6 +140,16 @@ export default function Chatbot() {
     setMessages(prev => [...prev, userMessage]);
     setInputText("");
     setIsLoading(true);
+    
+    // Only auto-scroll if we were already at the bottom
+    if (!wasAtBottom && chatContainer) {
+      // Prevent auto-scrolling by restoring previous position after a brief delay
+      setTimeout(() => {
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight - chatContainer.clientHeight;
+        }
+      }, 150);
+    }
     
     try {
       // Create a prompt for Gemini that includes conversation history
