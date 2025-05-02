@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { loadFaceApiModels, detectFace } from "@/lib/face-api";
 import { startSpeechRecognition, stopSpeechRecognition } from "@/lib/speech-api";
-import { generateGeminiResponse } from "@/lib/gemini-api";
+import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
 import { speakText } from "@/lib/text-to-speech";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
@@ -10,6 +10,7 @@ import { AgeGroup } from "@shared/types/index";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import EmergencyResources from "@/components/EmergencyResources";
 
 export default function EmotionAI() {
   const [isRunning, setIsRunning] = useState(false);

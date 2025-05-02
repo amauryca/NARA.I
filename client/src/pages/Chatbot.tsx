@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { generateGeminiResponse } from "@/lib/gemini-api";
+import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
 import { speakText } from "@/lib/text-to-speech";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
@@ -8,6 +8,7 @@ import { AgeGroup } from "@shared/types/index";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import EmergencyResources from "@/components/EmergencyResources";
 
 interface ChatMessage {
   id: string;
@@ -31,6 +32,8 @@ export default function Chatbot() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('default');
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
+  const [crisisSeverity, setCrisisSeverity] = useState<'severe' | 'moderate' | null>(null);
+  const [showEmergencyResources, setShowEmergencyResources] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -82,15 +85,24 @@ export default function Chatbot() {
         
         Provide a thoughtful, supportive response as NARA. Be conversational, warm, and helpful.
         Respond in the first person as if you are NARA. Keep your response concise (2-3 sentences).
+
+        If the user mentions self-harm, suicide, or other concerning content, provide a compassionate and supportive response that acknowledges their pain but encourages them to seek professional help.
       `;
       
+      // Check for crisis content in the user's message
+      const detectedCrisis = detectCrisisContent(inputText);
+      if (detectedCrisis) {
+        setCrisisSeverity(detectedCrisis);
+        setShowEmergencyResources(true);
+      }
+      
       // Generate response from Gemini with age-appropriate context
-      const botResponse = await generateGeminiResponse(prompt, selectedAgeGroup);
+      const response = await generateResponseWithCrisisDetection(prompt, selectedAgeGroup);
       
       // Add bot message
       const botMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: botResponse,
+        text: response.response,
         sender: "bot",
         timestamp: new Date()
       };
@@ -99,7 +111,7 @@ export default function Chatbot() {
       
       // Speak the response using our custom text-to-speech functionality
       if (textToSpeechEnabled) {
-        speakText(botResponse, selectedVoiceId);
+        speakText(response.response, selectedVoiceId);
       }
     } catch (error) {
       console.error("Error getting chatbot response:", error);
@@ -116,6 +128,11 @@ export default function Chatbot() {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Function to handle closing the emergency resources panel
+  const handleCloseEmergencyResources = () => {
+    setShowEmergencyResources(false);
   };
 
   return (
@@ -226,6 +243,13 @@ export default function Chatbot() {
           </p>
         </div>
       </div>
+      
+      {/* Emergency Resources */}
+      <EmergencyResources 
+        show={showEmergencyResources}
+        onClose={handleCloseEmergencyResources}
+        severity={crisisSeverity || 'moderate'}
+      />
     </section>
   );
 }
