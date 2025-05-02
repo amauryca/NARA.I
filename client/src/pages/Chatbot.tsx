@@ -52,10 +52,58 @@ export default function Chatbot() {
     }
   }, []);
 
+  // Function to validate user input for potential jailbreak attempts
+  const validateInput = (input: string): boolean => {
+    const jailbreakPatterns = [
+      /ignore( all)? (previous|prior|above|earlier) instructions/i,
+      /ignore( all)? (constraints|rules|guidelines)/i,
+      /bypass (restrictions|filters|limitations|constraints)/i,
+      /disregard (previous|prior|above) (instructions|constraints|limitations)/i,
+      /you are (now |)(a|an) .{1,30}(\.|$)/i,
+      /act as (a|an) .{1,30}(\.|$)/i,
+      /you are not (a|an) (AI|artificial intelligence|language model|assistant)/i,
+      /pretend (that )?(you are|you're|to be) .{1,30}(\.|$)/i,
+      /\[(DAN|STAN|JAILBREAK|SYSTEM|ADMIN)\]/i,
+      /\bDAN\b/i,
+      /\bSTAN\b/i,
+      /\bJAILBREAK(ED|ING)?\b/i,
+      /dev(eloper)? mode/i,
+      /\bSYSTEM (PROMPT|MESSAGE|INSTRUCTION)\b/i,
+      /\bADMIN (PROMPT|MESSAGE|INSTRUCTION)\b/i,
+      /write as if you (are human|were human)/i,
+      /forget (all your|your|all) (training|programming|instructions|limitations)/i,
+      /escape your (programming|instructions|rules)/i
+    ];
+
+    // Return true if input is safe, false if potential jailbreak attempt
+    return !jailbreakPatterns.some(pattern => pattern.test(input));
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!inputText.trim()) return;
+    
+    // Validate the input for security
+    if (!validateInput(inputText)) {
+      // Add a system message about invalid input
+      const systemMessage: ChatMessage = {
+        id: Date.now().toString(),
+        text: "I'm here to provide therapeutic support within my guidelines. Let's focus on how I can help you with your emotional well-being.",
+        sender: "bot",
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, {
+        id: (Date.now() - 1).toString(),
+        text: inputText,
+        sender: "user",
+        timestamp: new Date()
+      }, systemMessage]);
+      
+      setInputText("");
+      return;
+    }
     
     // Add user message
     const userMessage: ChatMessage = {

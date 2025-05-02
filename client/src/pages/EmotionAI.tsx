@@ -146,7 +146,23 @@ export default function EmotionAI() {
           
           // Only process if we have either face data or speech
           if ((faceData || transcript) && transcript.trim() !== "") {
-            processEmotionData(faceData, transcript);
+            // Additional security verification to filter out potential jailbreak attempts
+            const transcriptLower = transcript.toLowerCase();
+            const potentialJailbreakTerms = [
+              'jailbreak', 'ignore instructions', 'system prompt', 'admin mode', 'developer mode',
+              'bypass', 'circumvent', 'pretend you are', 'act as if', 'dan', 'stan',
+              'forget your training', 'ignore your programming'
+            ];
+            
+            const isSecurityRisk = potentialJailbreakTerms.some(term => transcriptLower.includes(term));
+            
+            if (isSecurityRisk) {
+              // Set a safe response instead of processing potentially harmful content
+              setResponse("I'm here to provide therapeutic support. Let's focus on how I can help you with your emotional well-being.");
+            } else {
+              // Process the legitimate speech content
+              processEmotionData(faceData, transcript);
+            }
             
             // Reset the transcript after processing
             if (recognitionRef.current) {
