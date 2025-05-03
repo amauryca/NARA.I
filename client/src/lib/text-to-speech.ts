@@ -87,7 +87,8 @@ const checkAudioStatus = async (clientId: string): Promise<any> => {
       params: { client_id: clientId },
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      timeout: 3000 // 3 second timeout
     });
     
     if (response.data && response.data.results) {
@@ -116,9 +117,21 @@ const fallbackSpeakText = (
   const synth = window.speechSynthesis;
   const utterance = new SpeechSynthesisUtterance(text);
   
+  // Make sure voices are available - in some browsers we need to wait
+  let voices = synth.getVoices();
+  if (voices.length === 0) {
+    // Set a flag to try again once voices are loaded
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = () => {
+        // Try again when voices are available
+        fallbackSpeakText(text, voiceId);
+      };
+      return;
+    }
+  }
+  
   // If a specific voice is requested, try to use it from browser voices
   if (voiceId !== 'default') {
-    const voices = synth.getVoices();
     // Try to match by language
     const selectedVoice = premiumVoices.find(v => v.id === voiceId);
     
@@ -127,6 +140,20 @@ const fallbackSpeakText = (
       if (matchingVoice) {
         utterance.voice = matchingVoice;
         utterance.lang = matchingVoice.lang;
+      } else {
+        // If no matching voice, try to find any voice in the requested language
+        const anyMatchingVoice = voices.find(v => v.lang.includes(selectedVoice.lang.split('-')[0]));
+        if (anyMatchingVoice) {
+          utterance.voice = anyMatchingVoice;
+          utterance.lang = anyMatchingVoice.lang;
+        } else {
+          // Default to a common voice if available
+          const defaultVoice = voices.find(v => v.lang.includes('en-US') || v.lang.includes('en-GB'));
+          if (defaultVoice) {
+            utterance.voice = defaultVoice;
+            utterance.lang = defaultVoice.lang;
+          }
+        }
       }
     }
   }
@@ -160,7 +187,7 @@ const submitTextToApi = async (
     const clientId = getClientId();
     const apiEndpoint = 'https://image-upscaling.net/api/tts/submit';
     
-    // Submit API request
+    // Set a timeout for the request
     const response = await axios.post(
       apiEndpoint, 
       {
@@ -172,7 +199,8 @@ const submitTextToApi = async (
       {
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 5000 // 5 second timeout
       }
     );
     
@@ -183,6 +211,7 @@ const submitTextToApi = async (
     return null;
   } catch (error) {
     console.error('Error submitting text to TTS API:', error);
+    // If there's an error, immediately use the fallback
     return null;
   }
 };
@@ -235,8 +264,17 @@ export const speakText = async (
   isSpeaking = true;
   
   try {
+    // Set a timeout to ensure we fall back to browser TTS if the API is taking too long
+    const apiTimeout = setTimeout(() => {
+      console.log('TTS API request timed out, using fallback');
+      fallbackSpeakText(text, voiceId);
+    }, 3000); // 3 second timeout
+    
     // Submit text to TTS API
     const requestId = await submitTextToApi(text, voiceId, speed);
+    
+    // Clear the timeout since we got a response
+    clearTimeout(apiTimeout);
     
     if (!requestId) {
       console.error('Failed to submit TTS request');
