@@ -1,5 +1,7 @@
 // text-to-speech.ts - Interface with image-upscaling.net API for advanced text-to-speech
 import axios from 'axios';
+// UUID v4 generator for client_id
+import { v4 as uuidv4 } from 'uuid';
 
 // Define available languages from the image-upscaling.net API
 export const availableLanguages = [
@@ -60,6 +62,44 @@ export const getAvailableVoices = (language?: string): VoiceOption[] => {
   return premiumVoices;
 };
 
+// Generate a 32-character client ID if not already created
+const getClientId = (): string => {
+  // Check if client ID is stored in localStorage
+  let clientId = localStorage.getItem('tts_client_id');
+  
+  // If not found, generate a new one
+  if (!clientId) {
+    // Create a hex string that's 32 characters long
+    clientId = uuidv4().replace(/-/g, '') + uuidv4().substring(0, 8);
+    localStorage.setItem('tts_client_id', clientId);
+  }
+  
+  return clientId;
+};
+
+// TTS API status checker
+const checkAudioStatus = async (clientId: string): Promise<any> => {
+  try {
+    // Submit API request
+    const apiEndpoint = 'https://image-upscaling.net/api/tts/status';
+    
+    const response = await axios.get(apiEndpoint, {
+      params: { client_id: clientId },
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.data && response.data.results) {
+      return response.data.results;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error checking TTS status:', error);
+    return [];
+  }
+};
+
 // Fallback to browser's built-in TTS when API is not working
 const fallbackSpeakText = (
   text: string, 
@@ -95,65 +135,130 @@ const fallbackSpeakText = (
   synth.speak(utterance);
 };
 
-// Base64 audio player for API responses
-const playAudioFromBase64 = (base64Data: string) => {
-  const audio = new Audio(`data:audio/mp3;base64,${base64Data}`);
-  audio.play().catch(err => {
-    console.error('Error playing audio:', err);
-  });
-  return audio;
+// Cache to store audio URLs
+type AudioCache = {
+  [key: string]: {
+    url: string;
+    timestamp: number;
+  };
 };
+
+const audioCache: AudioCache = {};
 
 // Global variables to track current audio playback
 let currentAudio: HTMLAudioElement | null = null;
 let isSpeaking = false;
+let statusCheckInterval: number | null = null;
+
+// Submit text to TTS API
+const submitTextToApi = async (
+  text: string, 
+  voiceId: string = 'am_adam',
+  speed: number = 1.0
+): Promise<string | null> => {
+  try {
+    const clientId = getClientId();
+    const apiEndpoint = 'https://image-upscaling.net/api/tts/submit';
+    
+    // Submit API request
+    const response = await axios.post(
+      apiEndpoint, 
+      {
+        client_id: clientId,
+        text: text,
+        voice: voiceId,
+        speed: speed
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    if (response.data && response.data.success) {
+      return response.data.id;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error submitting text to TTS API:', error);
+    return null;
+  }
+};
+
+// Poll for TTS results
+const pollForTtsResults = (requestId: string, maxAttempts = 20): Promise<string | null> => {
+  return new Promise((resolve) => {
+    let attempts = 0;
+    
+    const checkStatus = async () => {
+      const clientId = getClientId();
+      const results = await checkAudioStatus(clientId);
+      
+      // Find our request
+      const ourRequest = results.find((r: any) => r.id === requestId);
+      
+      if (ourRequest && ourRequest.output_url) {
+        // Cache the result
+        audioCache[requestId] = {
+          url: ourRequest.output_url,
+          timestamp: Date.now()
+        };
+        resolve(ourRequest.output_url);
+        return;
+      }
+      
+      attempts++;
+      if (attempts >= maxAttempts) {
+        resolve(null);
+        return;
+      }
+      
+      // Check again in 1 second
+      setTimeout(checkStatus, 1000);
+    };
+    
+    checkStatus();
+  });
+};
 
 // Get text-to-speech from API
 export const speakText = async (
   text: string, 
-  voiceId: string = 'af_bella',
+  voiceId: string = 'am_adam',
   speed: number = 1.0,
-  apiKey?: string
+  apiKey?: string // Not used in new API but kept for backward compatibility
 ): Promise<void> => {
   // Stop any currently playing audio
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
+  stopSpeech();
   
   isSpeaking = true;
   
   try {
-    // Use the image-upscaling.net API endpoint for text-to-speech
-    const apiUrl = 'https://api.image-upscaling.net/v1/text-to-speech';
+    // Submit text to TTS API
+    const requestId = await submitTextToApi(text, voiceId, speed);
     
-    const response = await axios.post(
-      apiUrl, 
-      {
-        text,
-        voice: voiceId,
-        speed
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': apiKey ? `Bearer ${apiKey}` : ''
-        },
-        responseType: 'json'
-      }
-    );
+    if (!requestId) {
+      console.error('Failed to submit TTS request');
+      fallbackSpeakText(text, voiceId);
+      return;
+    }
     
-    if (response.data && response.data.audio) {
-      currentAudio = playAudioFromBase64(response.data.audio);
-      
-      // Handle audio completion
-      currentAudio.onended = () => {
-        isSpeaking = false;
-        currentAudio = null;
-      };
+    // Check if we already have this audio in cache
+    if (audioCache[requestId] && Date.now() - audioCache[requestId].timestamp < 86400000) {
+      // Cache is less than 24 hours old, use it
+      playAudio(audioCache[requestId].url);
+      return;
+    }
+    
+    // Poll for results
+    const audioUrl = await pollForTtsResults(requestId);
+    
+    if (audioUrl) {
+      playAudio(audioUrl);
     } else {
-      console.error('Invalid API response:', response.data);
-      // Fall back to browser's built-in TTS
+      console.error('Failed to get TTS audio URL');
       fallbackSpeakText(text, voiceId);
     }
   } catch (error) {
@@ -161,6 +266,28 @@ export const speakText = async (
     // Fall back to browser's built-in TTS
     fallbackSpeakText(text, voiceId);
   }
+};
+
+// Play audio from URL
+const playAudio = (url: string): void => {
+  currentAudio = new Audio(url);
+  
+  currentAudio.onended = () => {
+    isSpeaking = false;
+    currentAudio = null;
+  };
+  
+  currentAudio.onerror = () => {
+    console.error('Error playing audio from URL');
+    isSpeaking = false;
+    currentAudio = null;
+  };
+  
+  currentAudio.play().catch(err => {
+    console.error('Error playing audio:', err);
+    isSpeaking = false;
+    currentAudio = null;
+  });
 };
 
 // Stop current speech

@@ -21,7 +21,7 @@ export function ApiKeyInput({ onApiKeyChange, initialApiKey = '' }: ApiKeyInputP
   return (
     <div className="space-y-2">
       <Label htmlFor="api-key" className="text-sm font-medium">
-        Image-Upscaling.net API Key
+        API Key (Optional)
       </Label>
       <div className="flex">
         <Input
@@ -42,7 +42,7 @@ export function ApiKeyInput({ onApiKeyChange, initialApiKey = '' }: ApiKeyInputP
         </Button>
       </div>
       <p className="text-xs text-gray-500">
-        Required for premium voices. Optional - if not provided, will fall back to browser's built-in voices.
+        Optional - the new TTS API is now free to use. API key may be required for future premium features.
       </p>
     </div>
   );
