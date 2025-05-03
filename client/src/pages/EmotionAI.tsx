@@ -2,10 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { loadFaceApiModels, detectFace } from "@/lib/face-api";
 import { startSpeechRecognition, stopSpeechRecognition } from "@/lib/speech-api";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
-import { speakText } from "@/lib/text-to-speech";
+import { speakText, stopSpeech } from "@/lib/text-to-speech";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
 import { VoiceSelector } from "@/components/VoiceSelector";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { AgeGroup } from "@shared/types/index";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -20,7 +22,9 @@ export default function EmotionAI() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('default');
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('af_bella');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
+  const [apiKey, setApiKey] = useState<string>('');
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
   const [crisisSeverity, setCrisisSeverity] = useState<'severe' | 'moderate' | null>(null);
   const [showEmergencyResources, setShowEmergencyResources] = useState(false);
@@ -122,7 +126,10 @@ export default function EmotionAI() {
       
       // Speak the response using our custom text-to-speech functionality
       if (textToSpeechEnabled) {
-        speakText(geminiResponse.response, selectedVoiceId);
+        // Stop any previous speech before starting new one
+        stopSpeech();
+        // Use the advanced text-to-speech API with selected language and voice
+        speakText(geminiResponse.response, selectedVoiceId, 1.0, apiKey);
       }
     } catch (error) {
       console.error("Error processing emotion data:", error);
@@ -288,10 +295,24 @@ export default function EmotionAI() {
                   </div>
                   
                   {textToSpeechEnabled && (
-                    <VoiceSelector
-                      onVoiceChange={setSelectedVoiceId}
-                      initialVoiceId={selectedVoiceId}
-                    />
+                    <div className="space-y-4">
+                      <ApiKeyInput 
+                        onApiKeyChange={setApiKey}
+                        initialApiKey={apiKey}
+                      />
+                      
+                      <LanguageSelector 
+                        onLanguageChange={setSelectedLanguage}
+                        initialLanguage={selectedLanguage}
+                      />
+                      
+                      <VoiceSelector
+                        onVoiceChange={setSelectedVoiceId}
+                        selectedLanguage={selectedLanguage}
+                        initialVoiceId={selectedVoiceId}
+                        apiKey={apiKey}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
