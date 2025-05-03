@@ -107,7 +107,8 @@ export default function EmotionAI() {
         Speech content: "${speechText}"
         
         Provide a compassionate, supportive response that addresses the emotional state observed. 
-        Keep the response conversational, warm and helpful. Don't mention the technical details of the analysis.
+        Keep the response very brief (2-3 sentences max), warm, and conversational. Use natural language, not clinical terms. 
+        Don't mention the technical details of the analysis or repeat the data back.
 
         If the speech indicates self-harm, suicide, or other concerning content, provide a supportive response that encourages the person to seek professional help.
       `;

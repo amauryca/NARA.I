@@ -170,8 +170,9 @@ export default function Chatbot() {
         User: ${inputText}
         
         Provide a thoughtful, supportive response as NARA. Be conversational, warm, and helpful.
-        Respond in the first person as if you are NARA. Keep your response concise (2-3 sentences).
+        Respond in the first person as if you are NARA. Keep your response very brief (2-3 sentences max).
 
+        Keep your tone therapeutic but natural and conversational, not clinical or distant.
         If the user mentions self-harm, suicide, or other concerning content, provide a compassionate and supportive response that acknowledges their pain but encourages them to seek professional help.
       `;
       
@@ -324,7 +325,7 @@ export default function Chatbot() {
               />
               <button 
                 type="submit" 
-                className="bg-[#F3E5F5] hover:bg-[#C8E6C9] text-[#333333] font-semibold px-6 py-2.5 rounded-full transition disabled:opacity-50"
+                className="bg-[#F3E5F5] hover:bg-[#C8E6C9] text-[#333333] font-semibold px-6 py-2.5 rounded-full transition disabled:opacity-50 whitespace-nowrap"
                 aria-label="Send message"
                 disabled={isLoading || !inputText.trim()}
               >
