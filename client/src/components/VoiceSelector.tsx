@@ -1,117 +1,114 @@
 import { useEffect, useState } from 'react';
-import { getAvailableVoices, VoiceOption, speakText } from '@/lib/text-to-speech';
+import { getAvailableVoices, VoiceOption, speakText, stopSpeech, isSpeechActive } from '@/lib/text-to-speech';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { PlayIcon, Square } from 'lucide-react';
 
 interface VoiceSelectorProps {
   onVoiceChange: (voiceId: string) => void;
+  selectedLanguage: string;
   initialVoiceId?: string;
+  apiKey?: string;
 }
 
-export function VoiceSelector({ onVoiceChange, initialVoiceId = 'default' }: VoiceSelectorProps) {
+export function VoiceSelector({ 
+  onVoiceChange, 
+  selectedLanguage, 
+  initialVoiceId = 'af_bella',
+  apiKey
+}: VoiceSelectorProps) {
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(initialVoiceId);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
-  // Initialize voices
+  // Update voices when language changes
   useEffect(() => {
-    const initializeVoices = () => {
-      // Wait a moment to make sure voices are loaded
-      setTimeout(() => {
-        const availableVoices = getAvailableVoices();
-        setVoices(availableVoices);
-      }, 100);
-    };
-
-    // Load voices and set up event listener for voices changed
-    initializeVoices();
-
-    // Many browsers load voices asynchronously
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = initializeVoices;
-    }
+    const availableVoices = getAvailableVoices(selectedLanguage);
+    setVoices(availableVoices);
     
-    return () => {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = null;
+    // If there's no voice for this language or the current voice isn't in this language,
+    // select the first available voice for this language
+    if (availableVoices.length > 0) {
+      const currentVoiceInLanguage = availableVoices.find(v => v.id === selectedVoiceId);
+      if (!currentVoiceInLanguage) {
+        setSelectedVoiceId(availableVoices[0].id);
       }
-    };
-  }, []);
+    }
+  }, [selectedLanguage, selectedVoiceId]);
 
   // When voice changes, notify parent component
   useEffect(() => {
     onVoiceChange(selectedVoiceId);
   }, [selectedVoiceId, onVoiceChange]);
 
+  // Update speaking state
+  useEffect(() => {
+    const checkSpeakingInterval = setInterval(() => {
+      setIsSpeaking(isSpeechActive());
+    }, 300);
+    
+    return () => clearInterval(checkSpeakingInterval);
+  }, []);
+
   // Test selected voice
-  const handleTestVoice = () => {
+  const handleTestVoice = async () => {
     if (isSpeaking) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      setIsSpeaking(false);
+      stopSpeech();
       return;
     }
 
-    setIsSpeaking(true);
     const testMessage = "Hello, this is a test of my voice. How do I sound?";
-    speakText(testMessage, selectedVoiceId);
-    
-    // Listen for speech end
-    if ('speechSynthesis' in window) {
-      const synth = window.speechSynthesis;
-      const checkSpeaking = setInterval(() => {
-        if (!synth.speaking) {
-          setIsSpeaking(false);
-          clearInterval(checkSpeaking);
-        }
-      }, 100);
-    } else {
-      // Fallback for browsers without proper event support
-      setTimeout(() => setIsSpeaking(false), 5000);
+    try {
+      await speakText(testMessage, selectedVoiceId, 1.0, apiKey);
+    } catch (error) {
+      console.error('Voice test failed:', error);
     }
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-      <h3 className="text-lg font-medium mb-3">AI Voice Settings</h3>
-      <p className="text-sm text-gray-500 mb-4">
-        Select a voice for the AI assistant. Different voices work better for different age groups.
-      </p>
-      
-      <div className="flex flex-col gap-3">
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="voice-select" className="text-sm font-medium">
+          Voice
+        </Label>
         <Select 
           value={selectedVoiceId} 
           onValueChange={setSelectedVoiceId}
           disabled={voices.length === 0}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger id="voice-select" className="w-full">
             <SelectValue placeholder="Select a voice" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="default">Default Voice</SelectItem>
-            {voices.map((voice) => (
-              <SelectItem key={voice.id} value={voice.id}>
-                {voice.name} ({voice.lang})
-              </SelectItem>
-            ))}
+            {voices.length === 0 ? (
+              <SelectItem value="no_voices">No voices available</SelectItem>
+            ) : (
+              voices.map((voice) => (
+                <SelectItem key={voice.id} value={voice.id}>
+                  {voice.name} {voice.gender ? `(${voice.gender})` : ''}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
-        
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={handleTestVoice}
-          className="flex items-center justify-center gap-2"
-          disabled={voices.length === 0}
-        >
-          {isSpeaking ? 
-            <><Square className="h-4 w-4" /> Stop Test</> : 
-            <><PlayIcon className="h-4 w-4" /> Test Voice</>
-          }
-        </Button>
+        <p className="text-xs text-gray-500">
+          Premium voices from the Image-Upscaling.net API
+        </p>
       </div>
+      
+      <Button 
+        type="button" 
+        variant="outline" 
+        onClick={handleTestVoice}
+        className="flex items-center justify-center gap-2 w-full"
+        disabled={voices.length === 0}
+      >
+        {isSpeaking ? 
+          <><Square className="h-4 w-4" /> Stop Test</> : 
+          <><PlayIcon className="h-4 w-4" /> Test Voice</>
+        }
+      </Button>
     </div>
   );
 }
