@@ -9,14 +9,12 @@ interface VoiceSelectorProps {
   onVoiceChange: (voiceId: string) => void;
   selectedLanguage: string;
   initialVoiceId?: string;
-  apiKey?: string;
 }
 
 export function VoiceSelector({ 
   onVoiceChange, 
   selectedLanguage, 
-  initialVoiceId = 'af_bella',
-  apiKey
+  initialVoiceId = 'af_bella'
 }: VoiceSelectorProps) {
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(initialVoiceId);
@@ -60,7 +58,7 @@ export function VoiceSelector({
 
     const testMessage = "Hello, this is a test of my voice. How do I sound?";
     try {
-      await speakText(testMessage, selectedVoiceId, 1.0, apiKey);
+      await speakText(testMessage, selectedVoiceId, 1.0);
     } catch (error) {
       console.error('Voice test failed:', error);
     }

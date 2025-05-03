@@ -227,8 +227,7 @@ const pollForTtsResults = (requestId: string, maxAttempts = 20): Promise<string 
 export const speakText = async (
   text: string, 
   voiceId: string = 'am_adam',
-  speed: number = 1.0,
-  apiKey?: string // Not used in new API but kept for backward compatibility
+  speed: number = 1.0
 ): Promise<void> => {
   // Stop any currently playing audio
   stopSpeech();

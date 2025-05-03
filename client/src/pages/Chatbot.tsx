@@ -34,7 +34,7 @@ export default function Chatbot() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('af_bella');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
-  const [apiKey, setApiKey] = useState<string>('');
+  // Text-to-speech related settings
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
   const [crisisSeverity, setCrisisSeverity] = useState<'severe' | 'moderate' | null>(null);
   const [showEmergencyResources, setShowEmergencyResources] = useState(false);
@@ -200,7 +200,7 @@ export default function Chatbot() {
         // Stop any previous speech before starting new one
         stopSpeech();
         // Use the advanced text-to-speech API with selected language and voice
-        speakText(response.response, selectedVoiceId, 1.0, apiKey);
+        speakText(response.response, selectedVoiceId, 1.0);
       }
     } catch (error) {
       console.error("Error getting chatbot response:", error);
@@ -267,11 +267,6 @@ export default function Chatbot() {
                   
                   {textToSpeechEnabled && (
                     <div className="space-y-4">
-                      <ApiKeyInput 
-                        onApiKeyChange={setApiKey}
-                        initialApiKey={apiKey}
-                      />
-                      
                       <LanguageSelector 
                         onLanguageChange={setSelectedLanguage}
                         initialLanguage={selectedLanguage}
@@ -281,7 +276,6 @@ export default function Chatbot() {
                         onVoiceChange={setSelectedVoiceId}
                         selectedLanguage={selectedLanguage}
                         initialVoiceId={selectedVoiceId}
-                        apiKey={apiKey}
                       />
                     </div>
                   )}

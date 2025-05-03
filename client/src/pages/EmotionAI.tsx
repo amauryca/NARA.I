@@ -24,7 +24,7 @@ export default function EmotionAI() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('af_bella');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
-  const [apiKey, setApiKey] = useState<string>('');
+  // Text-to-speech related settings
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
   const [crisisSeverity, setCrisisSeverity] = useState<'severe' | 'moderate' | null>(null);
   const [showEmergencyResources, setShowEmergencyResources] = useState(false);
@@ -129,7 +129,7 @@ export default function EmotionAI() {
         // Stop any previous speech before starting new one
         stopSpeech();
         // Use the advanced text-to-speech API with selected language and voice
-        speakText(geminiResponse.response, selectedVoiceId, 1.0, apiKey);
+        speakText(geminiResponse.response, selectedVoiceId, 1.0);
       }
     } catch (error) {
       console.error("Error processing emotion data:", error);
@@ -296,11 +296,6 @@ export default function EmotionAI() {
                   
                   {textToSpeechEnabled && (
                     <div className="space-y-4">
-                      <ApiKeyInput 
-                        onApiKeyChange={setApiKey}
-                        initialApiKey={apiKey}
-                      />
-                      
                       <LanguageSelector 
                         onLanguageChange={setSelectedLanguage}
                         initialLanguage={selectedLanguage}
@@ -310,7 +305,6 @@ export default function EmotionAI() {
                         onVoiceChange={setSelectedVoiceId}
                         selectedLanguage={selectedLanguage}
                         initialVoiceId={selectedVoiceId}
-                        apiKey={apiKey}
                       />
                     </div>
                   )}
