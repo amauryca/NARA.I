@@ -10,11 +10,17 @@ export const availableLanguages = [
   { code: 'fr-FR', name: 'French' },
   { code: 'es-ES', name: 'Spanish' },
   { code: 'de-DE', name: 'German' },
-  { code: 'zh-CN', name: 'Mandarin Chinese' },
   { code: 'it-IT', name: 'Italian' },
-  { code: 'pt-BR', name: 'Brazilian Portuguese' },
+  { code: 'pt-BR', name: 'Portuguese' },
+  { code: 'pl-PL', name: 'Polish' },
+  { code: 'tr-TR', name: 'Turkish' },
+  { code: 'ru-RU', name: 'Russian' },
+  { code: 'nl-NL', name: 'Dutch' },
   { code: 'ja-JP', name: 'Japanese' },
-  { code: 'ko-KR', name: 'Korean' }
+  { code: 'zh-CN', name: 'Chinese' },
+  { code: 'ko-KR', name: 'Korean' },
+  { code: 'hi-IN', name: 'Hindi' },
+  { code: 'ar-XA', name: 'Arabic' }
 ];
 
 // Interface for voice options
@@ -25,8 +31,9 @@ export interface VoiceOption {
   gender?: string;
 }
 
-// Define premium voice options from image-upscaling.net
+// Define voice options from image-upscaling.net
 export const premiumVoices: VoiceOption[] = [
+  // American English
   { id: 'af_bella', name: 'Bella', lang: 'en-US', gender: 'female' },
   { id: 'af_jheart', name: 'Heart', lang: 'en-US', gender: 'male' },
   { id: 'af_nicole', name: 'Nicole', lang: 'en-US', gender: 'female' },
@@ -34,23 +41,79 @@ export const premiumVoices: VoiceOption[] = [
   { id: 'af_sky', name: 'Sky', lang: 'en-US', gender: 'female' },
   { id: 'am_adam', name: 'Adam', lang: 'en-US', gender: 'male' },
   { id: 'am_michael', name: 'Michael', lang: 'en-US', gender: 'male' },
+  { id: 'am_ryan', name: 'Ryan', lang: 'en-US', gender: 'male' },
+  { id: 'am_jack', name: 'Jack', lang: 'en-US', gender: 'male' },
+  { id: 'af_amy', name: 'Amy', lang: 'en-US', gender: 'female' },
+
+  // British English
   { id: 'bf_emma', name: 'Emma', lang: 'en-GB', gender: 'female' },
   { id: 'bf_isabella', name: 'Isabella', lang: 'en-GB', gender: 'female' },
   { id: 'bf_lily', name: 'Lily', lang: 'en-GB', gender: 'female' },
   { id: 'bm_george', name: 'George', lang: 'en-GB', gender: 'male' },
   { id: 'bm_lewis', name: 'Lewis', lang: 'en-GB', gender: 'male' },
+  { id: 'bm_noah', name: 'Noah', lang: 'en-GB', gender: 'male' },
+  
   // French voices
   { id: 'fr_sophie', name: 'Sophie', lang: 'fr-FR', gender: 'female' },
   { id: 'fr_pierre', name: 'Pierre', lang: 'fr-FR', gender: 'male' },
+  { id: 'fr_elise', name: 'Elise', lang: 'fr-FR', gender: 'female' },
+  { id: 'fr_lucas', name: 'Lucas', lang: 'fr-FR', gender: 'male' },
+  
   // Spanish voices
   { id: 'es_maria', name: 'Maria', lang: 'es-ES', gender: 'female' },
   { id: 'es_carlos', name: 'Carlos', lang: 'es-ES', gender: 'male' },
+  { id: 'es_sofia', name: 'Sofia', lang: 'es-ES', gender: 'female' },
+  { id: 'es_diego', name: 'Diego', lang: 'es-ES', gender: 'male' },
+  
   // German voices
   { id: 'de_anna', name: 'Anna', lang: 'de-DE', gender: 'female' },
   { id: 'de_klaus', name: 'Klaus', lang: 'de-DE', gender: 'male' },
-  // Mandarin voices
+  { id: 'de_hannah', name: 'Hannah', lang: 'de-DE', gender: 'female' },
+  { id: 'de_max', name: 'Max', lang: 'de-DE', gender: 'male' },
+  
+  // Italian voices
+  { id: 'it_giulia', name: 'Giulia', lang: 'it-IT', gender: 'female' },
+  { id: 'it_marco', name: 'Marco', lang: 'it-IT', gender: 'male' },
+  
+  // Portuguese voices
+  { id: 'pt_beatriz', name: 'Beatriz', lang: 'pt-BR', gender: 'female' },
+  { id: 'pt_rafael', name: 'Rafael', lang: 'pt-BR', gender: 'male' },
+  
+  // Polish voices
+  { id: 'pl_zofia', name: 'Zofia', lang: 'pl-PL', gender: 'female' },
+  { id: 'pl_kacper', name: 'Kacper', lang: 'pl-PL', gender: 'male' },
+  
+  // Turkish voices
+  { id: 'tr_zeynep', name: 'Zeynep', lang: 'tr-TR', gender: 'female' },
+  { id: 'tr_yusuf', name: 'Yusuf', lang: 'tr-TR', gender: 'male' },
+  
+  // Russian voices
+  { id: 'ru_alisa', name: 'Alisa', lang: 'ru-RU', gender: 'female' },
+  { id: 'ru_ivan', name: 'Ivan', lang: 'ru-RU', gender: 'male' },
+  
+  // Dutch voices
+  { id: 'nl_lieke', name: 'Lieke', lang: 'nl-NL', gender: 'female' },
+  { id: 'nl_daan', name: 'Daan', lang: 'nl-NL', gender: 'male' },
+  
+  // Japanese voices
+  { id: 'ja_akira', name: 'Akira', lang: 'ja-JP', gender: 'male' },
+  { id: 'ja_yui', name: 'Yui', lang: 'ja-JP', gender: 'female' },
+  
+  // Chinese voices
   { id: 'zh_lin', name: 'Lin', lang: 'zh-CN', gender: 'female' },
-  { id: 'zh_chen', name: 'Chen', lang: 'zh-CN', gender: 'male' }
+  { id: 'zh_chen', name: 'Chen', lang: 'zh-CN', gender: 'male' },
+  
+  // Korean voices
+  { id: 'ko_minho', name: 'Minho', lang: 'ko-KR', gender: 'male' },
+  { id: 'ko_jiwoo', name: 'Jiwoo', lang: 'ko-KR', gender: 'female' },
+  
+  // Hindi voices
+  { id: 'hi_aarav', name: 'Aarav', lang: 'hi-IN', gender: 'male' },
+  { id: 'hi_diya', name: 'Diya', lang: 'hi-IN', gender: 'female' },
+  
+  // Arabic voices
+  { id: 'ar_amir', name: 'Amir', lang: 'ar-XA', gender: 'male' },
+  { id: 'ar_layla', name: 'Layla', lang: 'ar-XA', gender: 'female' }
 ];
 
 // Get API-based voices

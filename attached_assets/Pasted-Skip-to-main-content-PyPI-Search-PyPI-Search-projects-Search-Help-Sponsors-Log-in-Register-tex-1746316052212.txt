@@ -1,0 +1,125 @@
+Skip to main content
+PyPI
+Search PyPI
+Search projects
+Search
+Help Sponsors Log in Register
+text-to-speech-api 2025.0.1
+pip install text-to-speech-apiCopy PIP instructions
+
+Latest version
+Released: Apr 23, 2025
+
+image-upscaling.net api client
+
+Navigation
+ Project description
+ Release history
+ Download files
+Verified details 
+These details have been verified by PyPI
+Maintainers
+Avatar for image-upscaling.net from gravatar.com image-upscaling.net
+Unverified details
+These details have not been verified by PyPI
+Project links
+Homepage
+Meta
+License: MIT License
+Author: Marvin Eckhardt
+Maintainer: Marvin Eckhardt
+ Tagstts, text-to-speech, ai, voice synthesis, speech generation, python-api, free-tts, machine-learning, deep-learning, audio, speech
+Requires: Python >=3.8
+Classifiers
+License
+OSI Approved :: MIT License
+Programming Language
+Python
+Topic
+Multimedia :: Sound/Audio :: Speech
+Scientific/Engineering :: Artificial Intelligence
+Software Development :: Libraries :: Python Modules
+Sponsored: Python Software Foundation
+Capital One is a Maintaining sponsor of the Python Software Foundation.
+PSF Sponsor · Served ethically
+Report project as malware
+Project description
+image-upscaling.net API Client
+A simple Python package to interact with the free image-upscaling.net text to speech API.
+
+Features
+Submit Text: Send text to the tts service with selected voice and speed (visit the website for voices and character limit).
+Query Status: Retrieve the processing status of your requests. This will give you the urls to download processed mp3 files.
+Installation
+Install the package using pip:
+
+pip install text-to-speech-api
+Usage
+Submit Request
+The submit function sends an image for upscaling.
+
+Note: The client_id must be a 32-digit hexadecimal string of your choice to identify your requests.
+
+from text_to_speech_api import submit
+res = submit(client_id, "Hello world", "am_adam", speed=1.2)
+Parameters:
+client_id (str): Your 32-digit hexadecimal client ID.
+text (str): Your text to process
+voice (str): Select a voice
+speed (float): set output speed
+Querying Processing Status
+The get_status function retrieves the status of your requests.
+
+from text_to_speech_api import get_status
+results = get_status(client_id)
+Returns:
+a list of (id, output_path) for your requests
+
+Availability
+This project is fully donation-funded. If you find it useful, please consider making a contribution to help cover server costs and ensure its continued availability.
+
+At the moment, the service is free to use, but its future depends on community support. If donations are insufficient to maintain operations, it may not be possible to sustain long-term availability.
+
+ 
+
+Join our Discord for updates, discussions, or support: https://discord.gg/utXujgAT8R
+
+License
+This project is licensed under the MIT License.
+
+
+Help
+Installing packages
+Uploading packages
+User guide
+Project name retention
+FAQs
+About PyPI
+PyPI Blog
+Infrastructure dashboard
+Statistics
+Logos & trademarks
+Our sponsors
+Contributing to PyPI
+Bugs and feedback
+Contribute on GitHub
+Translate PyPI
+Sponsor PyPI
+Development credits
+Using PyPI
+Terms of Service
+Report security issue
+Code of conduct
+Privacy Notice
+Acceptable Use Policy
+Status: All Systems Operational
+
+Developed and maintained by the Python community, for the Python community.
+Donate today!
+
+"PyPI", "Python Package Index", and the blocks logos are registered trademarks of the Python Software Foundation.
+
+© 2025 Python Software Foundation
+Site map
+
+ English español français 日本語 português (Brasil) українська Ελληνικά Deutsch 中文 (简体) 中文 (繁體) русский עברית Esperanto 한국어
