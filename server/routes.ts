@@ -1,5 +1,6 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import axios from "axios";
 // Remove storage import as it's not being used
 // import { storage } from "./storage";
 
@@ -54,6 +55,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     `;
   };
   
+  // API Proxy for text-to-speech service
+  // Submit a new text-to-speech request
+  app.post('/api/tts/submit', async (req: Request, res: Response) => {
+    try {
+      // Forward the request to the actual API
+      const response = await axios.post(
+        'https://image-upscaling.net/api/tts/submit',
+        req.body,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 10000 // 10 second timeout
+        }
+      );
+      
+      // Return the API response directly
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Error in TTS submit proxy:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        // Forward error response from the API
+        return res.status(error.response.status).json(error.response.data);
+      }
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to connect to text-to-speech service' 
+      });
+    }
+  });
+
+  // Check the status of text-to-speech requests
+  app.get('/api/tts/status', async (req: Request, res: Response) => {
+    try {
+      // Forward the request to the actual API
+      const response = await axios.get(
+        'https://image-upscaling.net/api/tts/status',
+        {
+          params: req.query, // Pass along query parameters like client_id
+          timeout: 10000 // 10 second timeout
+        }
+      );
+      
+      // Return the API response directly
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Error in TTS status proxy:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        // Forward error response from the API
+        return res.status(error.response.status).json(error.response.data);
+      }
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to connect to text-to-speech service' 
+      });
+    }
+  });
+
+  // Gemini API route for generating responses
   app.post('/api/generate', async (req, res) => {
     try {
       const { prompt, apiKey, ageGroup } = req.body;
