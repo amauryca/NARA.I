@@ -158,65 +158,151 @@ const checkAudioStatus = async (clientId: string): Promise<any> => {
   }
 };
 
-// Fallback to browser's built-in TTS when API is not working
-const fallbackSpeakText = (
+// Use browser's built-in TTS as the primary method
+const speakWithBrowserTTS = (
   text: string, 
   voiceId: string = 'default'
-): void => {
-  if (!('speechSynthesis' in window)) {
-    console.error('Fallback text-to-speech not supported in this browser');
-    return;
-  }
-  
-  // Cancel any ongoing speech
-  window.speechSynthesis.cancel();
-  
-  const synth = window.speechSynthesis;
-  const utterance = new SpeechSynthesisUtterance(text);
-  
-  // Make sure voices are available - in some browsers we need to wait
-  let voices = synth.getVoices();
-  if (voices.length === 0) {
-    // Set a flag to try again once voices are loaded
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = () => {
-        // Try again when voices are available
-        fallbackSpeakText(text, voiceId);
-      };
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (!('speechSynthesis' in window)) {
+      console.error('Browser text-to-speech not supported');
+      reject(new Error('Browser text-to-speech not supported'));
       return;
     }
-  }
-  
-  // If a specific voice is requested, try to use it from browser voices
-  if (voiceId !== 'default') {
-    // Try to match by language
-    const selectedVoice = premiumVoices.find(v => v.id === voiceId);
     
-    if (selectedVoice) {
-      const matchingVoice = voices.find(v => v.lang.startsWith(selectedVoice.lang.split('-')[0]));
-      if (matchingVoice) {
-        utterance.voice = matchingVoice;
-        utterance.lang = matchingVoice.lang;
-      } else {
-        // If no matching voice, try to find any voice in the requested language
-        const anyMatchingVoice = voices.find(v => v.lang.includes(selectedVoice.lang.split('-')[0]));
-        if (anyMatchingVoice) {
-          utterance.voice = anyMatchingVoice;
-          utterance.lang = anyMatchingVoice.lang;
-        } else {
-          // Default to a common voice if available
-          const defaultVoice = voices.find(v => v.lang.includes('en-US') || v.lang.includes('en-GB'));
-          if (defaultVoice) {
-            utterance.voice = defaultVoice;
-            utterance.lang = defaultVoice.lang;
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const synth = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Set up event handlers
+    utterance.onend = () => {
+      isSpeaking = false;
+      resolve();
+    };
+    
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event);
+      isSpeaking = false;
+      reject(new Error('Speech synthesis error'));
+    };
+    
+    // Function to try speaking with a voice
+    const trySpeak = (availableVoices: SpeechSynthesisVoice[]) => {
+      // If a specific voice is requested, try to match it
+      if (voiceId !== 'default') {
+        // Get the premium voice with matching ID
+        const selectedVoice = premiumVoices.find(v => v.id === voiceId);
+        
+        if (selectedVoice) {
+          // Set up voice properties based on the selected voice
+          let matched = false;
+          
+          // Get gender and language to help select a suitable browser voice
+          const gender = selectedVoice.gender || '';
+          const language = selectedVoice.lang;
+          
+          // Filter voices by exact language match
+          let matchingVoices = availableVoices.filter(v => v.lang === language);
+          
+          // If no exact matches, try matching language family (e.g., 'en' instead of 'en-US')
+          if (matchingVoices.length === 0) {
+            const langPrefix = language.split('-')[0];
+            matchingVoices = availableVoices.filter(v => v.lang.startsWith(langPrefix));
+          }
+          
+          // If still no matches, use any available voice
+          if (matchingVoices.length === 0) {
+            matchingVoices = availableVoices;
+          }
+          
+          // Choose a voice based on gender if possible
+          let browserVoice: SpeechSynthesisVoice | undefined;
+          
+          if (gender === 'female') {
+            // Try to find a female voice (often has 'female' in name or is not 'male')
+            browserVoice = matchingVoices.find(v => 
+              v.name.toLowerCase().includes('female') || 
+              !v.name.toLowerCase().includes('male'));
+          } else if (gender === 'male') {
+            // Try to find a male voice
+            browserVoice = matchingVoices.find(v => 
+              v.name.toLowerCase().includes('male'));
+          }
+          
+          // If we found a suitable voice, use it
+          if (browserVoice) {
+            utterance.voice = browserVoice;
+            utterance.lang = browserVoice.lang;
+            matched = true;
+          }
+          // If we didn't match by gender, use first available matching language
+          else if (matchingVoices.length > 0) {
+            utterance.voice = matchingVoices[0];
+            utterance.lang = matchingVoices[0].lang;
+            matched = true;
+          }
+          
+          // Apply some pitch and rate adjustments based on gender for variety
+          if (matched) {
+            if (gender === 'female') {
+              utterance.pitch = 1.1;  // Slightly higher pitch for female voices
+              utterance.rate = 1.0;   // Normal rate
+            } else if (gender === 'male') {
+              utterance.pitch = 0.9;  // Slightly lower pitch for male voices
+              utterance.rate = 0.95;  // Slightly slower rate
+            }
           }
         }
       }
+      
+      // If we haven't set a voice yet, use default
+      if (!utterance.voice && availableVoices.length > 0) {
+        // Prefer English voices if available
+        const englishVoice = availableVoices.find(v => 
+          v.lang === 'en-US' || v.lang === 'en-GB' || v.lang.startsWith('en'));
+        
+        if (englishVoice) {
+          utterance.voice = englishVoice;
+          utterance.lang = englishVoice.lang;
+        } else {
+          // Use the first available voice
+          utterance.voice = availableVoices[0];
+          utterance.lang = availableVoices[0].lang;
+        }
+      }
+      
+      // Start speaking
+      isSpeaking = true;
+      synth.speak(utterance);
+      console.log(`Speaking with browser voice: ${utterance.voice?.name || 'Default'} (${utterance.lang})`);
+    };
+    
+    // Get available voices
+    let voices = synth.getVoices();
+    
+    if (voices.length > 0) {
+      trySpeak(voices);
+    } else {
+      // If voices aren't loaded yet, wait for them
+      if (typeof speechSynthesis.onvoiceschanged !== 'undefined') {
+        speechSynthesis.onvoiceschanged = () => {
+          voices = synth.getVoices();
+          trySpeak(voices);
+        };
+      } else {
+        // If the browser doesn't support onvoiceschanged, just try with whatever is available
+        trySpeak([]);
+      }
     }
-  }
-  
-  // Start speaking
-  synth.speak(utterance);
+  });
+};
+
+// Legacy fallback function (simplified) for compatibility
+const fallbackSpeakText = (text: string, voiceId: string = 'default'): void => {
+  speakWithBrowserTTS(text, voiceId)
+    .catch(error => console.error('Error in fallback speech:', error));
 };
 
 // Cache to store audio URLs
@@ -309,56 +395,57 @@ const pollForTtsResults = (requestId: string, maxAttempts = 20): Promise<string 
   });
 };
 
-// Get text-to-speech from API
+// Main text-to-speech function (now using browser TTS as primary method since API has network issues)
 export const speakText = async (
   text: string, 
-  voiceId: string = 'en_us_002', // Default to Brandon (en_us_002) voice
+  voiceId: string = 'en_us_002', // Voice ID (will be used for selecting appropriate browser voice)
   speed: number = 1.0
 ): Promise<void> => {
   // Stop any currently playing audio
   stopSpeech();
   
-  isSpeaking = true;
-  
   try {
-    // Set a timeout to ensure we fall back to browser TTS if the API is taking too long
-    const apiTimeout = setTimeout(() => {
-      console.log('TTS API request timed out, using fallback');
-      fallbackSpeakText(text, voiceId);
-    }, 3000); // 3 second timeout
-    
-    // Submit text to TTS API
-    const requestId = await submitTextToApi(text, voiceId, speed);
-    
-    // Clear the timeout since we got a response
-    clearTimeout(apiTimeout);
-    
-    if (!requestId) {
-      console.error('Failed to submit TTS request');
-      fallbackSpeakText(text, voiceId);
-      return;
-    }
-    
-    // Check if we already have this audio in cache
-    if (audioCache[requestId] && Date.now() - audioCache[requestId].timestamp < 86400000) {
-      // Cache is less than 24 hours old, use it
-      playAudio(audioCache[requestId].url);
-      return;
-    }
-    
-    // Poll for results
-    const audioUrl = await pollForTtsResults(requestId);
-    
-    if (audioUrl) {
-      playAudio(audioUrl);
-    } else {
-      console.error('Failed to get TTS audio URL');
-      fallbackSpeakText(text, voiceId);
-    }
+    // Use browser's built-in TTS (our improved version)
+    await speakWithBrowserTTS(text, voiceId);
+    return;
   } catch (error) {
-    console.error('Error using text-to-speech API:', error);
-    // Fall back to browser's built-in TTS
-    fallbackSpeakText(text, voiceId);
+    console.warn('Browser TTS failed, attempting API fallback:', error);
+    
+    // If browser TTS fails for some reason, try the API as fallback
+    // This is unlikely to work due to network errors, but we keep it just in case
+    try {
+      isSpeaking = true;
+      
+      // Submit text to TTS API
+      const requestId = await submitTextToApi(text, voiceId, speed);
+      
+      if (!requestId) {
+        throw new Error('Failed to submit TTS request');
+      }
+      
+      // Check if we already have this audio in cache
+      if (audioCache[requestId] && Date.now() - audioCache[requestId].timestamp < 86400000) {
+        // Cache is less than 24 hours old, use it
+        playAudio(audioCache[requestId].url);
+        return;
+      }
+      
+      // Poll for results with shorter timeout
+      const audioUrl = await pollForTtsResults(requestId, 5); // Reduced attempts for faster fallback
+      
+      if (audioUrl) {
+        playAudio(audioUrl);
+      } else {
+        throw new Error('Failed to get TTS audio URL');
+      }
+    } catch (apiError) {
+      console.error('Both browser TTS and API TTS failed:', apiError);
+      // If we somehow get here (both methods failed), try one more time with system defaults
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
   }
 };
 
