@@ -135,99 +135,125 @@ const useBrowserTTS = (text: string, voiceId: string = 'default'): void => {
   synth.speak(utterance);
 };
 
-// Submit TTS request to the API through our server proxy
-const submitTTSRequest = async (
+// Use browser's built-in TTS directly
+const useBrowserTTSWithVoice = async (
   text: string,
-  voiceId: string = 'en_us_002', // Default: Male 1 (English US)
+  voiceId: string = 'en_us_002', // Default voice 
   speed: number = 1.0
-): Promise<string | null> => {
-  try {
-    const clientId = getClientId();
+): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window)) {
+      console.error('Browser text-to-speech not supported');
+      resolve(false);
+      return;
+    }
     
-    // Use our server-side proxy to avoid CORS issues
-    const response = await axios.post(
-      '/api/tts/submit', // Use our server proxy instead of direct API call
-      {
-        client_id: clientId,
-        text: text,
-        voice: voiceId,
-        speed: speed
-      },
-      {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 10000 // 10 second timeout
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = speed;
+    
+    // Set up event handlers
+    utterance.onend = () => {
+      isSpeaking = false;
+      resolve(true);
+    };
+    
+    utterance.onerror = () => {
+      console.error('Speech synthesis error');
+      isSpeaking = false;
+      resolve(false);
+    };
+    
+    // Get and filter available voices
+    const allVoices = window.speechSynthesis.getVoices();
+    
+    if (allVoices.length === 0) {
+      // If no voices available yet, wait for them to load
+      if (typeof speechSynthesis.onvoiceschanged !== 'undefined') {
+        speechSynthesis.onvoiceschanged = () => {
+          const voices = window.speechSynthesis.getVoices();
+          setVoiceForUtterance(utterance, voices, voiceId);
+          startSpeaking(utterance);
+        };
+      } else {
+        // No voices yet and no way to wait for them, use defaults
+        startSpeaking(utterance);
       }
-    );
-    
-    if (response.data && response.data.success) {
-      console.log('TTS request submitted successfully:', response.data);
-      return response.data.id;
     } else {
-      console.error('TTS API error:', response.data);
-      return null;
+      // Voices are already available
+      setVoiceForUtterance(utterance, allVoices, voiceId);
+      startSpeaking(utterance);
     }
-  } catch (error) {
-    console.error('Error submitting TTS request:', error);
-    return null;
+  });
+};
+
+// Set appropriate voice for the utterance based on voiceId
+const setVoiceForUtterance = (utterance: SpeechSynthesisUtterance, voices: SpeechSynthesisVoice[], voiceId: string): void => {
+  // Find matching premium voice to get language and gender
+  const selectedPremiumVoice = premiumVoices.find(v => v.id === voiceId);
+  
+  if (selectedPremiumVoice) {
+    const language = selectedPremiumVoice.lang;
+    const gender = selectedPremiumVoice.gender;
+    
+    // Filter by exact language match first
+    let matchingVoices = voices.filter(v => v.lang === language);
+    
+    // If no exact match, try broader language family
+    if (matchingVoices.length === 0) {
+      const langCode = language.split('-')[0];
+      matchingVoices = voices.filter(v => v.lang.startsWith(langCode));
+    }
+    
+    // If still no match, use any English voice or default
+    if (matchingVoices.length === 0) {
+      matchingVoices = voices.filter(v => v.lang.startsWith('en'));
+    }
+    
+    let selectedVoice: SpeechSynthesisVoice | null = null;
+    
+    // Try to match by gender
+    if (gender === 'female') {
+      // Try to find female voice
+      const femaleVoice = matchingVoices.find(v => 
+        v.name.toLowerCase().includes('female') || 
+        v.name.toLowerCase().includes('woman') ||
+        (!v.name.toLowerCase().includes('male') && 
+         !v.name.toLowerCase().includes('man')));
+         
+      selectedVoice = femaleVoice || null;
+    } else if (gender === 'male') {
+      // Try to find male voice
+      const maleVoice = matchingVoices.find(v => 
+        v.name.toLowerCase().includes('male') || 
+        v.name.toLowerCase().includes('man'));
+        
+      selectedVoice = maleVoice || null;
+    }
+    
+    // If we found a matching voice, use it
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+      utterance.lang = selectedVoice.lang;
+    } 
+    // Otherwise use the first available from filtered list
+    else if (matchingVoices.length > 0) {
+      utterance.voice = matchingVoices[0];
+      utterance.lang = matchingVoices[0].lang;
+    }
+    // Very last resort - use first available voice
+    else if (voices.length > 0) {
+      utterance.voice = voices[0];
+    }
   }
 };
 
-// Check the status of submitted TTS requests through our server proxy
-const checkTTSStatus = async (clientId: string): Promise<any[]> => {
-  try {
-    // Use our server-side proxy to avoid CORS issues
-    const response = await axios.get('/api/tts/status', {
-      params: { client_id: clientId },
-      timeout: 10000 // 10 second timeout
-    });
-    
-    if (response.data && response.data.results) {
-      return response.data.results;
-    }
-    return [];
-  } catch (error) {
-    console.error('Error checking TTS status:', error);
-    return [];
-  }
-};
-
-// Poll the API for text-to-speech results
-const pollForResults = async (requestId: string, maxAttempts = 10): Promise<string | null> => {
-  const clientId = getClientId();
-  let attempts = 0;
-  
-  // Polling function with delay
-  const poll = async (): Promise<string | null> => {
-    if (attempts >= maxAttempts) {
-      console.warn(`Max polling attempts reached (${maxAttempts}) for request ${requestId}`);
-      return null;
-    }
-    
-    attempts++;
-    
-    try {
-      // Get current status of all requests
-      const results = await checkTTSStatus(clientId);
-      
-      // Find our specific request
-      const ourRequest = results.find(r => r.id === requestId);
-      
-      if (ourRequest && ourRequest.output_url) {
-        console.log(`TTS audio URL found after ${attempts} attempts:`, ourRequest.output_url);
-        return ourRequest.output_url;
-      }
-      
-      // If not found or not ready, wait and try again
-      console.log(`TTS still processing, attempt ${attempts}/${maxAttempts} for request ${requestId}`);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay between polls
-      return poll();
-    } catch (error) {
-      console.error('Error during TTS polling:', error);
-      return null;
-    }
-  };
-  
-  return poll();
+// Start the speaking process
+const startSpeaking = (utterance: SpeechSynthesisUtterance): void => {
+  isSpeaking = true;
+  window.speechSynthesis.speak(utterance);
 };
 
 // Play audio from URL
@@ -262,6 +288,18 @@ const playAudio = (url: string): Promise<void> => {
   });
 };
 
+// This is a stub since we've switched to browser-based TTS only
+// It's kept here to maintain compatibility with existing code
+const submitTTSRequest = async (): Promise<null> => {
+  return null;
+};
+
+// This is a stub since we've switched to browser-based TTS only
+// It's kept here to maintain compatibility with existing code
+const checkTTSStatus = async (): Promise<any[]> => {
+  return [];
+};
+
 // Stop any current speech playback
 export const stopSpeech = (): void => {
   if (currentAudio) {
@@ -276,7 +314,7 @@ export const stopSpeech = (): void => {
   isSpeaking = false;
 };
 
-// Main TTS function
+// Main TTS function - now using browser's built-in TTS
 export const speakText = async (
   text: string,
   voiceId: string = 'en_us_002',
@@ -287,37 +325,19 @@ export const speakText = async (
   // Stop any current playback
   stopSpeech();
   
-  // Indicate that we're speaking
-  isSpeaking = true;
-  
   try {
-    // Submit the TTS request
-    const requestId = await submitTTSRequest(text, voiceId, speed);
+    // Use the browser's built-in TTS with our voice matching system
+    const success = await useBrowserTTSWithVoice(text, voiceId, speed);
     
-    if (!requestId) {
-      console.warn('Failed to get TTS request ID, falling back to browser TTS');
+    if (!success) {
+      // If the primary method failed, try the basic browser TTS as fallback
+      console.warn('Enhanced browser TTS failed, trying basic fallback');
       useBrowserTTS(text, voiceId);
-      return;
     }
-    
-    // Get the audio URL
-    const audioUrl = await pollForResults(requestId);
-    
-    if (!audioUrl) {
-      console.warn('Failed to get TTS audio URL, falling back to browser TTS');
-      useBrowserTTS(text, voiceId);
-      return;
-    }
-    
-    // Play the audio
-    await playAudio(audioUrl);
   } catch (error) {
-    console.error('TTS process failed:', error);
-    
-    // Fall back to browser TTS
-    if (isSpeaking) { // Only if we haven't already stopped speech
-      useBrowserTTS(text, voiceId);
-    }
+    console.error('TTS error:', error);
+    // Last resort fallback
+    useBrowserTTS(text, voiceId);
   }
 };
 
