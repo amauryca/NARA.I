@@ -14,7 +14,7 @@ interface VoiceSelectorProps {
 export function VoiceSelector({ 
   onVoiceChange, 
   selectedLanguage, 
-  initialVoiceId = 'af_bella'
+  initialVoiceId = 'en_us_001' // Default to Aria voice
 }: VoiceSelectorProps) {
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(initialVoiceId);

@@ -31,89 +31,83 @@ export interface VoiceOption {
   gender?: string;
 }
 
-// Define voice options from image-upscaling.net
+// Define voice options from image-upscaling.net (based on actual API voice IDs)
 export const premiumVoices: VoiceOption[] = [
-  // American English
-  { id: 'af_bella', name: 'Bella', lang: 'en-US', gender: 'female' },
-  { id: 'af_jheart', name: 'Heart', lang: 'en-US', gender: 'male' },
-  { id: 'af_nicole', name: 'Nicole', lang: 'en-US', gender: 'female' },
-  { id: 'af_sarah', name: 'Sarah', lang: 'en-US', gender: 'female' },
-  { id: 'af_sky', name: 'Sky', lang: 'en-US', gender: 'female' },
-  { id: 'am_adam', name: 'Adam', lang: 'en-US', gender: 'male' },
-  { id: 'am_michael', name: 'Michael', lang: 'en-US', gender: 'male' },
-  { id: 'am_ryan', name: 'Ryan', lang: 'en-US', gender: 'male' },
-  { id: 'am_jack', name: 'Jack', lang: 'en-US', gender: 'male' },
-  { id: 'af_amy', name: 'Amy', lang: 'en-US', gender: 'female' },
+  // American English voices
+  { id: 'en_us_001', name: 'Aria', lang: 'en-US', gender: 'female' },
+  { id: 'en_us_002', name: 'Brandon', lang: 'en-US', gender: 'male' },
+  { id: 'en_us_006', name: 'Harper', lang: 'en-US', gender: 'female' },
+  { id: 'en_us_007', name: 'Mike', lang: 'en-US', gender: 'male' },
+  { id: 'en_us_009', name: 'Joanna', lang: 'en-US', gender: 'female' },
+  { id: 'en_us_010', name: 'Matthew', lang: 'en-US', gender: 'male' },
+  { id: 'en_female_f08_salut_damour', name: 'Lily', lang: 'en-US', gender: 'female' },
+  { id: 'en_male_m03_lobby', name: 'Thomas', lang: 'en-US', gender: 'male' },
+  { id: 'en_female_f08_warmy_breeze', name: 'Emma', lang: 'en-US', gender: 'female' },
+  { id: 'en_male_m03_sunshine_soon', name: 'William', lang: 'en-US', gender: 'male' },
 
-  // British English
-  { id: 'bf_emma', name: 'Emma', lang: 'en-GB', gender: 'female' },
-  { id: 'bf_isabella', name: 'Isabella', lang: 'en-GB', gender: 'female' },
-  { id: 'bf_lily', name: 'Lily', lang: 'en-GB', gender: 'female' },
-  { id: 'bm_george', name: 'George', lang: 'en-GB', gender: 'male' },
-  { id: 'bm_lewis', name: 'Lewis', lang: 'en-GB', gender: 'male' },
-  { id: 'bm_noah', name: 'Noah', lang: 'en-GB', gender: 'male' },
+  // British English voices
+  { id: 'en_uk_001', name: 'Olivia', lang: 'en-GB', gender: 'female' },
+  { id: 'en_uk_003', name: 'James', lang: 'en-GB', gender: 'male' },
   
+  // Australian English voices
+  { id: 'en_au_001', name: 'Charlotte', lang: 'en-GB', gender: 'female' },
+  { id: 'en_au_002', name: 'Lucas', lang: 'en-GB', gender: 'male' },
+
   // French voices
-  { id: 'fr_sophie', name: 'Sophie', lang: 'fr-FR', gender: 'female' },
-  { id: 'fr_pierre', name: 'Pierre', lang: 'fr-FR', gender: 'male' },
-  { id: 'fr_elise', name: 'Elise', lang: 'fr-FR', gender: 'female' },
-  { id: 'fr_lucas', name: 'Lucas', lang: 'fr-FR', gender: 'male' },
+  { id: 'fr_001', name: 'Sophie', lang: 'fr-FR', gender: 'female' },
+  { id: 'fr_002', name: 'Louis', lang: 'fr-FR', gender: 'male' },
   
   // Spanish voices
-  { id: 'es_maria', name: 'Maria', lang: 'es-ES', gender: 'female' },
-  { id: 'es_carlos', name: 'Carlos', lang: 'es-ES', gender: 'male' },
-  { id: 'es_sofia', name: 'Sofia', lang: 'es-ES', gender: 'female' },
-  { id: 'es_diego', name: 'Diego', lang: 'es-ES', gender: 'male' },
+  { id: 'es_002', name: 'Maria', lang: 'es-ES', gender: 'female' },
+  { id: 'es_male_m_03', name: 'Carlos', lang: 'es-ES', gender: 'male' },
   
   // German voices
-  { id: 'de_anna', name: 'Anna', lang: 'de-DE', gender: 'female' },
-  { id: 'de_klaus', name: 'Klaus', lang: 'de-DE', gender: 'male' },
-  { id: 'de_hannah', name: 'Hannah', lang: 'de-DE', gender: 'female' },
-  { id: 'de_max', name: 'Max', lang: 'de-DE', gender: 'male' },
+  { id: 'de_001', name: 'Anna', lang: 'de-DE', gender: 'female' },
+  { id: 'de_002', name: 'Klaus', lang: 'de-DE', gender: 'male' },
   
   // Italian voices
-  { id: 'it_giulia', name: 'Giulia', lang: 'it-IT', gender: 'female' },
-  { id: 'it_marco', name: 'Marco', lang: 'it-IT', gender: 'male' },
-  
-  // Portuguese voices
-  { id: 'pt_beatriz', name: 'Beatriz', lang: 'pt-BR', gender: 'female' },
-  { id: 'pt_rafael', name: 'Rafael', lang: 'pt-BR', gender: 'male' },
-  
-  // Polish voices
-  { id: 'pl_zofia', name: 'Zofia', lang: 'pl-PL', gender: 'female' },
-  { id: 'pl_kacper', name: 'Kacper', lang: 'pl-PL', gender: 'male' },
-  
-  // Turkish voices
-  { id: 'tr_zeynep', name: 'Zeynep', lang: 'tr-TR', gender: 'female' },
-  { id: 'tr_yusuf', name: 'Yusuf', lang: 'tr-TR', gender: 'male' },
-  
-  // Russian voices
-  { id: 'ru_alisa', name: 'Alisa', lang: 'ru-RU', gender: 'female' },
-  { id: 'ru_ivan', name: 'Ivan', lang: 'ru-RU', gender: 'male' },
-  
-  // Dutch voices
-  { id: 'nl_lieke', name: 'Lieke', lang: 'nl-NL', gender: 'female' },
-  { id: 'nl_daan', name: 'Daan', lang: 'nl-NL', gender: 'male' },
+  { id: 'it_male_m03_adventure', name: 'Marco', lang: 'it-IT', gender: 'male' },
+  { id: 'it_female_f03_glorious', name: 'Giulia', lang: 'it-IT', gender: 'female' },
   
   // Japanese voices
-  { id: 'ja_akira', name: 'Akira', lang: 'ja-JP', gender: 'male' },
-  { id: 'ja_yui', name: 'Yui', lang: 'ja-JP', gender: 'female' },
+  { id: 'jp_001', name: 'Hina', lang: 'ja-JP', gender: 'female' },
+  { id: 'jp_006', name: 'Akira', lang: 'ja-JP', gender: 'male' },
   
   // Chinese voices
-  { id: 'zh_lin', name: 'Lin', lang: 'zh-CN', gender: 'female' },
-  { id: 'zh_chen', name: 'Chen', lang: 'zh-CN', gender: 'male' },
+  { id: 'cn_female_shaoning', name: 'Mei', lang: 'zh-CN', gender: 'female' },
+  { id: 'cn_male_xiaoming', name: 'Li', lang: 'zh-CN', gender: 'male' },
   
   // Korean voices
-  { id: 'ko_minho', name: 'Minho', lang: 'ko-KR', gender: 'male' },
-  { id: 'ko_jiwoo', name: 'Jiwoo', lang: 'ko-KR', gender: 'female' },
+  { id: 'kr_002', name: 'Seoyeon', lang: 'ko-KR', gender: 'female' },
+  { id: 'kr_004', name: 'Ji-Woo', lang: 'ko-KR', gender: 'male' },
+
+  // Portuguese voices
+  { id: 'br_001', name: 'Camila', lang: 'pt-BR', gender: 'female' },
+  { id: 'br_003', name: 'Thiago', lang: 'pt-BR', gender: 'male' },
+  
+  // Polish voices
+  { id: 'pl_male_m03_majestic', name: 'Piotr', lang: 'pl-PL', gender: 'male' },
+  { id: 'pl_female_f03_vibrant', name: 'Ania', lang: 'pl-PL', gender: 'female' },
+  
+  // Turkish voices
+  { id: 'tr_female_f03_melancholic', name: 'Zehra', lang: 'tr-TR', gender: 'female' },
+  { id: 'tr_male_m03_brave', name: 'Mehmet', lang: 'tr-TR', gender: 'male' },
+  
+  // Russian voices
+  { id: 'ru_008', name: 'Oksana', lang: 'ru-RU', gender: 'female' },
+  { id: 'ru_006', name: 'Ivan', lang: 'ru-RU', gender: 'male' },
+  
+  // Dutch voices
+  { id: 'nl_female_f03_tender', name: 'Lieke', lang: 'nl-NL', gender: 'female' },
+  { id: 'nl_male_m03_modern', name: 'Luuk', lang: 'nl-NL', gender: 'male' },
   
   // Hindi voices
-  { id: 'hi_aarav', name: 'Aarav', lang: 'hi-IN', gender: 'male' },
-  { id: 'hi_diya', name: 'Diya', lang: 'hi-IN', gender: 'female' },
+  { id: 'hi_female_f03_lovely', name: 'Priya', lang: 'hi-IN', gender: 'female' },
+  { id: 'hi_male_m03_panoramic', name: 'Arjun', lang: 'hi-IN', gender: 'male' },
   
   // Arabic voices
-  { id: 'ar_amir', name: 'Amir', lang: 'ar-XA', gender: 'male' },
-  { id: 'ar_layla', name: 'Layla', lang: 'ar-XA', gender: 'female' }
+  { id: 'ar_male_m03_balanced', name: 'Tarik', lang: 'ar-XA', gender: 'male' },
+  { id: 'ar_female_f03_precise', name: 'Layla', lang: 'ar-XA', gender: 'female' }
 ];
 
 // Get API-based voices
@@ -243,7 +237,7 @@ let statusCheckInterval: number | null = null;
 // Submit text to TTS API
 const submitTextToApi = async (
   text: string, 
-  voiceId: string = 'am_adam',
+  voiceId: string = 'en_us_002', // Default to Brandon voice
   speed: number = 1.0
 ): Promise<string | null> => {
   try {
@@ -318,7 +312,7 @@ const pollForTtsResults = (requestId: string, maxAttempts = 20): Promise<string 
 // Get text-to-speech from API
 export const speakText = async (
   text: string, 
-  voiceId: string = 'am_adam',
+  voiceId: string = 'en_us_002', // Default to Brandon (en_us_002) voice
   speed: number = 1.0
 ): Promise<void> => {
   // Stop any currently playing audio
@@ -415,24 +409,47 @@ export const getVoiceForAgeGroup = (ageGroup: string, language: string = 'en-US'
   // Return a different voice based on age group if possible
   switch (ageGroup) {
     case 'child':
-      // Try to find a friendly, higher-pitched voice
-      return voices.find(v => v.name === 'Bella' || v.name === 'Sarah') || voices[0];
+      // Try to find a friendly, higher-pitched voice for children
+      if (language === 'en-US') {
+        return voices.find(v => v.name === 'Lily' || v.name === 'Harper') || voices[0];
+      }
+      // Otherwise return a female voice if available
+      return voices.find(v => v.gender === 'female') || voices[0];
     
     case 'teen':
-      // Try to find a younger-sounding voice
-      return voices.find(v => v.name === 'Sky' || v.name === 'Nicole') || voices[0];
+      // Try to find a younger-sounding voice for teens
+      if (language === 'en-US') {
+        return voices.find(v => v.name === 'Emma' || v.name === 'Thomas') || voices[0];
+      }
+      // Mix of voices for teens
+      return voices[Math.floor(Math.random() * voices.length)];
     
     case 'young':
-      // Try to find an energetic voice
-      return voices.find(v => v.name === 'Adam' || v.name === 'Emma') || voices[0];
+      // Try to find an energetic voice for young adults
+      if (language === 'en-US') {
+        return voices.find(v => v.name === 'Brandon' || v.name === 'Aria') || voices[0];
+      }
+      // Otherwise randomly choose a voice
+      return voices[Math.floor(Math.random() * voices.length)];
     
     case 'adult':
-      // Default neutral voice
-      return voices.find(v => v.name === 'Heart' || v.name === 'Michael') || voices[0];
+      // Default neutral voice for adults
+      if (language === 'en-US') {
+        return voices.find(v => v.name === 'Matthew' || v.name === 'Joanna') || voices[0];
+      }
+      // Prefer male voices for adults if available
+      return voices.find(v => v.gender === 'male') || voices[0];
     
     case 'senior':
-      // Try to find a more mature voice
-      return voices.find(v => v.name === 'George' || v.name === 'Lewis') || voices[0];
+      // Try to find a more mature voice for seniors
+      if (language === 'en-GB') { // British accent for seniors
+        return voices.find(v => v.name === 'James' || v.name === 'Olivia') || voices[0];
+      }
+      if (language === 'en-US') {
+        return voices.find(v => v.name === 'William' || v.name === 'Joanna') || voices[0];
+      }
+      // Otherwise use first available voice
+      return voices[0];
     
     default:
       // Fallback to first available voice
