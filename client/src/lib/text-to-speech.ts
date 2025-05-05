@@ -56,6 +56,10 @@ export const premiumVoices: VoiceOption[] = [
   { id: 'af_sky', name: 'Sky (American)', lang: 'en-US', gender: 'female' }
 ];
 
+// Audio playback state management
+let currentAudio: HTMLAudioElement | null = null;
+let isSpeaking = false;
+
 // Filter voices by language
 export const getAvailableVoices = (language?: string): VoiceOption[] => {
   if (language) {
@@ -71,6 +75,7 @@ const getClientId = (): string => {
   if (!clientId || clientId.length !== 32) {
     // Generate a new client ID that's exactly 32 hex characters
     const rawId = uuidv4().replace(/-/g, '');
+    // Ensure it's exactly 32 characters
     clientId = rawId + rawId.substring(0, 32 - rawId.length);
     localStorage.setItem('tts_client_id', clientId);
   }
@@ -78,9 +83,57 @@ const getClientId = (): string => {
   return clientId;
 };
 
-// Audio playback state management
-let currentAudio: HTMLAudioElement | null = null;
-let isSpeaking = false;
+// Stop any current speech playback
+export const stopSpeech = (): void => {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  
+  isSpeaking = false;
+};
+
+// Check if speech is currently active
+export const isSpeechActive = (): boolean => {
+  return isSpeaking;
+};
+
+// Play audio from URL
+const playAudio = (url: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    // Stop any current playback
+    stopSpeech();
+    
+    currentAudio = new Audio(url);
+    
+    // Set up audio event handlers
+    currentAudio.onended = () => {
+      isSpeaking = false;
+      currentAudio = null;
+      resolve();
+    };
+    
+    currentAudio.onerror = (error) => {
+      console.error('Error playing audio:', error);
+      isSpeaking = false;
+      currentAudio = null;
+      reject(error);
+    };
+    
+    // Start playback
+    isSpeaking = true;
+    currentAudio.play().catch(error => {
+      console.error('Audio playback failed:', error);
+      isSpeaking = false;
+      currentAudio = null;
+      reject(error);
+    });
+  });
+};
 
 // Basic browser TTS fallback
 const useBrowserTTS = (text: string, voiceId: string = 'default'): void => {
@@ -126,61 +179,13 @@ const useBrowserTTS = (text: string, voiceId: string = 'default'): void => {
   synth.speak(utterance);
 };
 
-// Use browser's built-in TTS directly
-const useBrowserTTSWithVoice = async (
-  text: string,
-  voiceId: string = 'en_us_002', // Default voice 
-  speed: number = 1.0
-): Promise<boolean> => {
-  return new Promise((resolve) => {
-    if (!('speechSynthesis' in window)) {
-      console.error('Browser text-to-speech not supported');
-      resolve(false);
-      return;
-    }
-    
-    // Stop any ongoing speech
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = speed;
-    
-    // Set up event handlers
-    utterance.onend = () => {
-      isSpeaking = false;
-      resolve(true);
-    };
-    
-    utterance.onerror = () => {
-      console.error('Speech synthesis error');
-      isSpeaking = false;
-      resolve(false);
-    };
-    
-    // Get and filter available voices
-    const allVoices = window.speechSynthesis.getVoices();
-    
-    if (allVoices.length === 0) {
-      // If no voices available yet, wait for them to load
-      if (typeof speechSynthesis.onvoiceschanged !== 'undefined') {
-        speechSynthesis.onvoiceschanged = () => {
-          const voices = window.speechSynthesis.getVoices();
-          setVoiceForUtterance(utterance, voices, voiceId);
-          startSpeaking(utterance);
-        };
-      } else {
-        // No voices yet and no way to wait for them, use defaults
-        startSpeaking(utterance);
-      }
-    } else {
-      // Voices are already available
-      setVoiceForUtterance(utterance, allVoices, voiceId);
-      startSpeaking(utterance);
-    }
-  });
+// Helper function to start speaking with utterance
+const startSpeaking = (utterance: SpeechSynthesisUtterance): void => {
+  isSpeaking = true;
+  window.speechSynthesis.speak(utterance);
 };
 
-// Set appropriate voice for the utterance based on voiceId
+// Helper function to set voice for utterance
 const setVoiceForUtterance = (utterance: SpeechSynthesisUtterance, voices: SpeechSynthesisVoice[], voiceId: string): void => {
   // Find matching premium voice to get language and gender
   const selectedPremiumVoice = premiumVoices.find(v => v.id === voiceId);
@@ -241,61 +246,61 @@ const setVoiceForUtterance = (utterance: SpeechSynthesisUtterance, voices: Speec
   }
 };
 
-// Start the speaking process
-const startSpeaking = (utterance: SpeechSynthesisUtterance): void => {
-  isSpeaking = true;
-  window.speechSynthesis.speak(utterance);
-};
-
-// Play audio from URL
-const playAudio = (url: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    stopSpeech(); // Stop any current playback
+// Use browser's built-in TTS directly
+const useBrowserTTSWithVoice = async (
+  text: string,
+  voiceId: string = 'af_heart', // Default voice 
+  speed: number = 1.0
+): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window)) {
+      console.error('Browser text-to-speech not supported');
+      resolve(false);
+      return;
+    }
     
-    currentAudio = new Audio(url);
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
     
-    // Set up audio event handlers
-    currentAudio.onended = () => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = speed;
+    
+    // Set up event handlers
+    utterance.onend = () => {
       isSpeaking = false;
-      currentAudio = null;
-      resolve();
+      resolve(true);
     };
     
-    currentAudio.onerror = (error) => {
-      console.error('Error playing audio:', error);
+    utterance.onerror = () => {
+      console.error('Speech synthesis error');
       isSpeaking = false;
-      currentAudio = null;
-      reject(error);
+      resolve(false);
     };
     
-    // Start playback
-    isSpeaking = true;
-    currentAudio.play().catch(error => {
-      console.error('Audio playback failed:', error);
-      isSpeaking = false;
-      currentAudio = null;
-      reject(error);
-    });
+    // Get and filter available voices
+    const allVoices = window.speechSynthesis.getVoices();
+    
+    if (allVoices.length === 0) {
+      // If no voices available yet, wait for them to load
+      if (typeof speechSynthesis.onvoiceschanged !== 'undefined') {
+        speechSynthesis.onvoiceschanged = () => {
+          const voices = window.speechSynthesis.getVoices();
+          setVoiceForUtterance(utterance, voices, voiceId);
+          startSpeaking(utterance);
+        };
+      } else {
+        // No voices yet and no way to wait for them, use defaults
+        startSpeaking(utterance);
+      }
+    } else {
+      // Voices are already available
+      setVoiceForUtterance(utterance, allVoices, voiceId);
+      startSpeaking(utterance);
+    }
   });
 };
 
-// These functions are now implemented below
-
-// Stop any current speech playback
-export const stopSpeech = (): void => {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
-  
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
-  
-  isSpeaking = false;
-};
-
-// Submit TTS request to the API based on the Python package docs
+// Submit TTS request to the image-upscaling.net API
 const submitTTSRequest = async (
   text: string,
   voiceId: string = 'af_heart', // Default voice
@@ -419,9 +424,7 @@ export const speakText = async (
     console.error('TTS process failed:', error);
     
     // Fall back to browser TTS
-    if (isSpeaking) { // Only if we haven't already stopped speech
-      await useBrowserTTSWithVoice(text, voiceId, speed);
-    }
+    await useBrowserTTSWithVoice(text, voiceId, speed);
   }
 };
 
@@ -510,9 +513,4 @@ export const getVoiceForAgeGroup = (ageGroup: string, language: string = 'en-US'
       }
       return voices[0];
   }
-};
-
-// Check if speech is currently active
-export const isSpeechActive = (): boolean => {
-  return isSpeaking;
 };
