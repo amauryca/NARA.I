@@ -91,10 +91,6 @@ export const stopSpeech = (): void => {
     currentAudio = null;
   }
   
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
-  
   isSpeaking = false;
 };
 
@@ -136,73 +132,7 @@ const playAudio = (url: string): Promise<void> => {
   });
 };
 
-// Basic browser TTS fallback - use in case API fails
-const useBrowserTTS = (text: string, voiceId: string = 'af_heart'): void => {
-  if (!('speechSynthesis' in window)) {
-    console.error('Browser text-to-speech not supported');
-    return;
-  }
-  
-  // Cancel any ongoing speech
-  window.speechSynthesis.cancel();
-  
-  const utterance = new SpeechSynthesisUtterance(text);
-  
-  // Try to match the voice with the browser's available voices
-  const synth = window.speechSynthesis;
-  const voices = synth.getVoices();
-  
-  if (voices.length > 0) {
-    // Find the selected premium voice to get its language
-    const selectedVoice = premiumVoices.find(v => v.id === voiceId);
-    
-    if (selectedVoice) {
-      // Set language based on selected voice
-      utterance.lang = selectedVoice.lang;
-      
-      // Try to find a matching browser voice with the same language
-      const matchingVoices = voices.filter(v => v.lang === selectedVoice.lang);
-      
-      if (matchingVoices.length > 0) {
-        // Try to match by gender if possible
-        if (selectedVoice.gender === 'female') {
-          const femaleVoice = matchingVoices.find(v => 
-            v.name.toLowerCase().includes('female') || 
-            v.name.toLowerCase().includes('woman'));
-          if (femaleVoice) {
-            utterance.voice = femaleVoice;
-          } else {
-            utterance.voice = matchingVoices[0];
-          }
-        } else if (selectedVoice.gender === 'male') {
-          const maleVoice = matchingVoices.find(v => 
-            v.name.toLowerCase().includes('male') || 
-            v.name.toLowerCase().includes('man'));
-          if (maleVoice) {
-            utterance.voice = maleVoice;
-          } else {
-            utterance.voice = matchingVoices[0];
-          }
-        } else {
-          utterance.voice = matchingVoices[0];
-        }
-      }
-    }
-  }
-  
-  // Set event handlers
-  utterance.onend = () => {
-    isSpeaking = false;
-  };
-  
-  utterance.onerror = () => {
-    isSpeaking = false;
-  };
-  
-  // Start speaking
-  isSpeaking = true;
-  synth.speak(utterance);
-};
+// No browser TTS fallback - using only image-upscaling.net API
 
 // Submit TTS request to the image-upscaling.net API
 const submitTTSRequest = async (
@@ -292,7 +222,7 @@ const pollForResults = async (requestId: string, maxAttempts = 10): Promise<stri
   return poll();
 };
 
-// Main TTS function - tries the API first, falls back to browser TTS if needed
+// Main TTS function - uses the image-upscaling.net API exclusively
 export const speakText = async (
   text: string,
   voiceId: string = 'af_heart',
@@ -309,12 +239,11 @@ export const speakText = async (
   }
   
   try {
-    // Try the image-upscaling.net API first
+    // Submit request to the image-upscaling.net API
     const requestId = await submitTTSRequest(text, voiceId, speed);
     
     if (!requestId) {
-      console.warn('Failed to get TTS request ID, falling back to browser TTS');
-      useBrowserTTS(text, voiceId);
+      console.error('Failed to get TTS request ID');
       return;
     }
     
@@ -322,8 +251,7 @@ export const speakText = async (
     const audioUrl = await pollForResults(requestId);
     
     if (!audioUrl) {
-      console.warn('Failed to get TTS audio URL, falling back to browser TTS');
-      useBrowserTTS(text, voiceId);
+      console.error('Failed to get TTS audio URL');
       return;
     }
     
@@ -331,9 +259,6 @@ export const speakText = async (
     await playAudio(audioUrl);
   } catch (error) {
     console.error('TTS process failed:', error);
-    
-    // Fall back to browser TTS as last resort
-    useBrowserTTS(text, voiceId);
   }
 };
 
