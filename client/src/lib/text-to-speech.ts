@@ -1,4 +1,5 @@
 // text-to-speech.ts - Interface with image-upscaling.net API for advanced text-to-speech
+// Implementation based on https://pypi.org/project/text-to-speech-api/
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -135,8 +136,8 @@ const playAudio = (url: string): Promise<void> => {
   });
 };
 
-// Basic browser TTS fallback
-const useBrowserTTS = (text: string, voiceId: string = 'default'): void => {
+// Basic browser TTS fallback - use in case API fails
+const useBrowserTTS = (text: string, voiceId: string = 'af_heart'): void => {
   if (!('speechSynthesis' in window)) {
     console.error('Browser text-to-speech not supported');
     return;
@@ -156,11 +157,35 @@ const useBrowserTTS = (text: string, voiceId: string = 'default'): void => {
     const selectedVoice = premiumVoices.find(v => v.id === voiceId);
     
     if (selectedVoice) {
+      // Set language based on selected voice
+      utterance.lang = selectedVoice.lang;
+      
       // Try to find a matching browser voice with the same language
-      const matchingVoice = voices.find(v => v.lang === selectedVoice.lang);
-      if (matchingVoice) {
-        utterance.voice = matchingVoice;
-        utterance.lang = matchingVoice.lang;
+      const matchingVoices = voices.filter(v => v.lang === selectedVoice.lang);
+      
+      if (matchingVoices.length > 0) {
+        // Try to match by gender if possible
+        if (selectedVoice.gender === 'female') {
+          const femaleVoice = matchingVoices.find(v => 
+            v.name.toLowerCase().includes('female') || 
+            v.name.toLowerCase().includes('woman'));
+          if (femaleVoice) {
+            utterance.voice = femaleVoice;
+          } else {
+            utterance.voice = matchingVoices[0];
+          }
+        } else if (selectedVoice.gender === 'male') {
+          const maleVoice = matchingVoices.find(v => 
+            v.name.toLowerCase().includes('male') || 
+            v.name.toLowerCase().includes('man'));
+          if (maleVoice) {
+            utterance.voice = maleVoice;
+          } else {
+            utterance.voice = matchingVoices[0];
+          }
+        } else {
+          utterance.voice = matchingVoices[0];
+        }
       }
     }
   }
@@ -177,127 +202,6 @@ const useBrowserTTS = (text: string, voiceId: string = 'default'): void => {
   // Start speaking
   isSpeaking = true;
   synth.speak(utterance);
-};
-
-// Helper function to start speaking with utterance
-const startSpeaking = (utterance: SpeechSynthesisUtterance): void => {
-  isSpeaking = true;
-  window.speechSynthesis.speak(utterance);
-};
-
-// Helper function to set voice for utterance
-const setVoiceForUtterance = (utterance: SpeechSynthesisUtterance, voices: SpeechSynthesisVoice[], voiceId: string): void => {
-  // Find matching premium voice to get language and gender
-  const selectedPremiumVoice = premiumVoices.find(v => v.id === voiceId);
-  
-  if (selectedPremiumVoice) {
-    const language = selectedPremiumVoice.lang;
-    const gender = selectedPremiumVoice.gender;
-    
-    // Filter by exact language match first
-    let matchingVoices = voices.filter(v => v.lang === language);
-    
-    // If no exact match, try broader language family
-    if (matchingVoices.length === 0) {
-      const langCode = language.split('-')[0];
-      matchingVoices = voices.filter(v => v.lang.startsWith(langCode));
-    }
-    
-    // If still no match, use any English voice or default
-    if (matchingVoices.length === 0) {
-      matchingVoices = voices.filter(v => v.lang.startsWith('en'));
-    }
-    
-    let selectedVoice: SpeechSynthesisVoice | null = null;
-    
-    // Try to match by gender
-    if (gender === 'female') {
-      // Try to find female voice
-      const femaleVoice = matchingVoices.find(v => 
-        v.name.toLowerCase().includes('female') || 
-        v.name.toLowerCase().includes('woman') ||
-        (!v.name.toLowerCase().includes('male') && 
-         !v.name.toLowerCase().includes('man')));
-         
-      selectedVoice = femaleVoice || null;
-    } else if (gender === 'male') {
-      // Try to find male voice
-      const maleVoice = matchingVoices.find(v => 
-        v.name.toLowerCase().includes('male') || 
-        v.name.toLowerCase().includes('man'));
-        
-      selectedVoice = maleVoice || null;
-    }
-    
-    // If we found a matching voice, use it
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-      utterance.lang = selectedVoice.lang;
-    } 
-    // Otherwise use the first available from filtered list
-    else if (matchingVoices.length > 0) {
-      utterance.voice = matchingVoices[0];
-      utterance.lang = matchingVoices[0].lang;
-    }
-    // Very last resort - use first available voice
-    else if (voices.length > 0) {
-      utterance.voice = voices[0];
-    }
-  }
-};
-
-// Use browser's built-in TTS directly
-const useBrowserTTSWithVoice = async (
-  text: string,
-  voiceId: string = 'af_heart', // Default voice 
-  speed: number = 1.0
-): Promise<boolean> => {
-  return new Promise((resolve) => {
-    if (!('speechSynthesis' in window)) {
-      console.error('Browser text-to-speech not supported');
-      resolve(false);
-      return;
-    }
-    
-    // Stop any ongoing speech
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = speed;
-    
-    // Set up event handlers
-    utterance.onend = () => {
-      isSpeaking = false;
-      resolve(true);
-    };
-    
-    utterance.onerror = () => {
-      console.error('Speech synthesis error');
-      isSpeaking = false;
-      resolve(false);
-    };
-    
-    // Get and filter available voices
-    const allVoices = window.speechSynthesis.getVoices();
-    
-    if (allVoices.length === 0) {
-      // If no voices available yet, wait for them to load
-      if (typeof speechSynthesis.onvoiceschanged !== 'undefined') {
-        speechSynthesis.onvoiceschanged = () => {
-          const voices = window.speechSynthesis.getVoices();
-          setVoiceForUtterance(utterance, voices, voiceId);
-          startSpeaking(utterance);
-        };
-      } else {
-        // No voices yet and no way to wait for them, use defaults
-        startSpeaking(utterance);
-      }
-    } else {
-      // Voices are already available
-      setVoiceForUtterance(utterance, allVoices, voiceId);
-      startSpeaking(utterance);
-    }
-  });
 };
 
 // Submit TTS request to the image-upscaling.net API
@@ -336,11 +240,11 @@ const submitTTSRequest = async (
 const checkTTSStatus = async (clientId: string): Promise<any[]> => {
   try {
     // Use our server proxy endpoint to check status
-    const response = await axios.get(`/api/tts/status`, {
+    const response = await axios.get('/api/tts/status', {
       params: { client_id: clientId }
     });
     
-    if (response.data && response.data.results) {
+    if (response.data && response.data.success && Array.isArray(response.data.results)) {
       return response.data.results;
     }
     return [];
@@ -351,7 +255,7 @@ const checkTTSStatus = async (clientId: string): Promise<any[]> => {
 };
 
 // Poll for TTS results until available
-const pollForResults = async (requestId: string, maxAttempts = 12): Promise<string | null> => {
+const pollForResults = async (requestId: string, maxAttempts = 10): Promise<string | null> => {
   const clientId = getClientId();
   let attempts = 0;
   
@@ -399,13 +303,18 @@ export const speakText = async (
   // Stop any current playback
   stopSpeech();
   
+  if (text.trim().length === 0) {
+    console.warn('Empty text provided, nothing to speak');
+    return;
+  }
+  
   try {
-    // Try the API first
+    // Try the image-upscaling.net API first
     const requestId = await submitTTSRequest(text, voiceId, speed);
     
     if (!requestId) {
       console.warn('Failed to get TTS request ID, falling back to browser TTS');
-      await useBrowserTTSWithVoice(text, voiceId, speed);
+      useBrowserTTS(text, voiceId);
       return;
     }
     
@@ -414,17 +323,17 @@ export const speakText = async (
     
     if (!audioUrl) {
       console.warn('Failed to get TTS audio URL, falling back to browser TTS');
-      await useBrowserTTSWithVoice(text, voiceId, speed);
+      useBrowserTTS(text, voiceId);
       return;
     }
     
-    // Play the audio
+    // Play the audio from the API
     await playAudio(audioUrl);
   } catch (error) {
     console.error('TTS process failed:', error);
     
-    // Fall back to browser TTS
-    await useBrowserTTSWithVoice(text, voiceId, speed);
+    // Fall back to browser TTS as last resort
+    useBrowserTTS(text, voiceId);
   }
 };
 

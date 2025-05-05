@@ -68,18 +68,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Form data for the API request according to the Python package documentation
+      const formData = new URLSearchParams();
+      formData.append('client_id', client_id);
+      formData.append('text', text);
+      formData.append('voice', voice);
+      formData.append('speed', speed ? speed.toString() : '1.0');
+      
+      console.log(`Sending TTS request to API with voice ${voice}`);
+      
       // Forward the request to the actual API based on the Python package docs
       // https://pypi.org/project/text-to-speech-api/
       const response = await axios.post(
-        'https://image-upscaling.net/online_tts/api/submit',
+        'https://image-upscaling.net/online_tts/api/submit.php',
+        formData,
         {
-          client_id,
-          text,
-          voice,
-          speed: speed || 1.0
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           timeout: 15000 // 15 second timeout
         }
       );
@@ -87,16 +91,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('TTS API response:', response.data);
       
       // Return the API response directly
-      return res.status(response.status).json(response.data);
+      return res.status(200).json({
+        success: true,
+        id: response.data.id || "request-id",
+        message: response.data.message || "Request submitted"
+      });
     } catch (error) {
       console.error('Error in TTS submit proxy:', error);
       if (axios.isAxiosError(error) && error.response) {
         // Forward error response from the API
-        return res.status(error.response.status).json(error.response.data);
+        console.error('API error response:', error.response.data);
+        return res.status(500).json({
+          success: false,
+          error: 'API Error: ' + (error.response.data?.message || error.message)
+        });
       }
       return res.status(500).json({ 
         success: false,
-        error: 'Failed to connect to text-to-speech service' 
+        error: 'Failed to connect to text-to-speech service: ' + (error instanceof Error ? error.message : 'Unknown error')
       });
     }
   });
@@ -115,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Forward the request to the actual API based on the Python package docs
       const response = await axios.get(
-        'https://image-upscaling.net/online_tts/api/status',
+        'https://image-upscaling.net/online_tts/api/status.php',
         {
           params: { client_id: clientId },
           timeout: 10000 // 10 second timeout
@@ -125,16 +137,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('TTS status API response:', response.data);
       
       // Return the API response directly
-      return res.status(response.status).json(response.data);
+      return res.status(200).json({
+        success: true,
+        results: Array.isArray(response.data) ? response.data : []
+      });
     } catch (error) {
       console.error('Error in TTS status proxy:', error);
       if (axios.isAxiosError(error) && error.response) {
         // Forward error response from the API
-        return res.status(error.response.status).json(error.response.data);
+        console.error('API error response:', error.response.data);
+        return res.status(500).json({
+          success: false,
+          error: 'API Error: ' + (error.response.data?.message || error.message)
+        });
       }
       return res.status(500).json({ 
         success: false, 
-        error: 'Failed to connect to text-to-speech service' 
+        error: 'Failed to connect to text-to-speech service: ' + (error instanceof Error ? error.message : 'Unknown error')
       });
     }
   });
