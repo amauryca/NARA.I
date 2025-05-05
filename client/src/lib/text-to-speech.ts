@@ -6,20 +6,12 @@ import { v4 as uuidv4 } from 'uuid';
 export const availableLanguages = [
   { code: 'en-US', name: 'American English' },
   { code: 'en-GB', name: 'British English' },
-  { code: 'fr-FR', name: 'French' },
-  { code: 'es-ES', name: 'Spanish' },
-  { code: 'de-DE', name: 'German' },
-  { code: 'it-IT', name: 'Italian' },
-  { code: 'pt-BR', name: 'Portuguese' },
-  { code: 'pl-PL', name: 'Polish' },
-  { code: 'tr-TR', name: 'Turkish' },
-  { code: 'ru-RU', name: 'Russian' },
-  { code: 'nl-NL', name: 'Dutch' },
   { code: 'ja-JP', name: 'Japanese' },
-  { code: 'zh-CN', name: 'Chinese' },
-  { code: 'ko-KR', name: 'Korean' },
-  { code: 'hi-IN', name: 'Hindi' },
-  { code: 'ar-XA', name: 'Arabic' }
+  { code: 'zh-CN', name: 'Mandarin Chinese' },
+  { code: 'es-ES', name: 'Spanish' },
+  { code: 'fr-FR', name: 'French' },
+  { code: 'it-IT', name: 'Italian' },
+  { code: 'pt-BR', name: 'Brazilian Portuguese' }
 ];
 
 // Interface for voice options
@@ -30,39 +22,38 @@ export interface VoiceOption {
   gender?: string;
 }
 
-// Define common voice options
+// Define voice options based on image-upscaling.net TTS API
 export const premiumVoices: VoiceOption[] = [
-  // English voices (US)
-  { id: 'en_us_001', name: 'Female 1', lang: 'en-US', gender: 'female' },
-  { id: 'en_us_002', name: 'Male 1', lang: 'en-US', gender: 'male' },
-  { id: 'en_us_006', name: 'Female 2', lang: 'en-US', gender: 'female' },
-  { id: 'en_us_007', name: 'Male 2', lang: 'en-US', gender: 'male' },
-  { id: 'en_us_009', name: 'Female 3', lang: 'en-US', gender: 'female' },
-  { id: 'en_us_010', name: 'Male 3', lang: 'en-US', gender: 'male' },
-
-  // English voices (UK)
-  { id: 'en_uk_001', name: 'UK Female', lang: 'en-GB', gender: 'female' },
-  { id: 'en_uk_003', name: 'UK Male', lang: 'en-GB', gender: 'male' },
+  // American voices (am_)
+  { id: 'am_adam', name: 'Adam (American)', lang: 'en-US', gender: 'male' },
+  { id: 'am_echo', name: 'Echo (American)', lang: 'en-US', gender: 'female' },
+  { id: 'am_eric', name: 'Eric (American)', lang: 'en-US', gender: 'male' },
+  { id: 'am_fenrir', name: 'Fenrir (American)', lang: 'en-US', gender: 'male' },
+  { id: 'am_liam', name: 'Liam (American)', lang: 'en-US', gender: 'male' },
+  { id: 'am_michael', name: 'Michael (American)', lang: 'en-US', gender: 'male' },
+  { id: 'am_onyx', name: 'Onyx (American)', lang: 'en-US', gender: 'male' },
+  { id: 'am_puck', name: 'Puck (American)', lang: 'en-US', gender: 'male' },
+  { id: 'am_santa', name: 'Santa (American)', lang: 'en-US', gender: 'male' },
   
-  // French voices
-  { id: 'fr_001', name: 'French Female', lang: 'fr-FR', gender: 'female' },
-  { id: 'fr_002', name: 'French Male', lang: 'fr-FR', gender: 'male' },
+  // British voices (bf_ for female, bm_ for male)
+  { id: 'bf_emma', name: 'Emma (British)', lang: 'en-GB', gender: 'female' },
+  { id: 'bf_isabella', name: 'Isabella (British)', lang: 'en-GB', gender: 'female' },
+  { id: 'bf_lily', name: 'Lily (British)', lang: 'en-GB', gender: 'female' },
+  { id: 'bm_george', name: 'George (British)', lang: 'en-GB', gender: 'male' },
+  { id: 'bm_lewis', name: 'Lewis (British)', lang: 'en-GB', gender: 'male' },
   
-  // Spanish voices
-  { id: 'es_002', name: 'Spanish Female', lang: 'es-ES', gender: 'female' },
-  { id: 'es_male_m03', name: 'Spanish Male', lang: 'es-ES', gender: 'male' },
-  
-  // German voices
-  { id: 'de_001', name: 'German Female', lang: 'de-DE', gender: 'female' },
-  { id: 'de_002', name: 'German Male', lang: 'de-DE', gender: 'male' },
-  
-  // Other common languages
-  { id: 'jp_001', name: 'Japanese Female', lang: 'ja-JP', gender: 'female' },
-  { id: 'jp_006', name: 'Japanese Male', lang: 'ja-JP', gender: 'male' },
-  { id: 'ru_008', name: 'Russian Female', lang: 'ru-RU', gender: 'female' },
-  { id: 'ru_006', name: 'Russian Male', lang: 'ru-RU', gender: 'male' },
-  { id: 'cn_female_shaoning', name: 'Chinese Female', lang: 'zh-CN', gender: 'female' },
-  { id: 'cn_male_xiaoming', name: 'Chinese Male', lang: 'zh-CN', gender: 'male' }
+  // American female voices (af_)
+  { id: 'af_alloy', name: 'Alloy (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_aoede', name: 'Aoede (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_bella', name: 'Bella (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_heart', name: 'Heart (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_jessica', name: 'Jessica (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_kore', name: 'Kore (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_nicole', name: 'Nicole (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_nova', name: 'Nova (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_river', name: 'River (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_sarah', name: 'Sarah (American)', lang: 'en-US', gender: 'female' },
+  { id: 'af_sky', name: 'Sky (American)', lang: 'en-US', gender: 'female' }
 ];
 
 // Filter voices by language
@@ -288,17 +279,7 @@ const playAudio = (url: string): Promise<void> => {
   });
 };
 
-// This is a stub since we've switched to browser-based TTS only
-// It's kept here to maintain compatibility with existing code
-const submitTTSRequest = async (): Promise<null> => {
-  return null;
-};
-
-// This is a stub since we've switched to browser-based TTS only
-// It's kept here to maintain compatibility with existing code
-const checkTTSStatus = async (): Promise<any[]> => {
-  return [];
-};
+// These functions are now implemented below
 
 // Stop any current speech playback
 export const stopSpeech = (): void => {
@@ -314,10 +295,98 @@ export const stopSpeech = (): void => {
   isSpeaking = false;
 };
 
-// Main TTS function - now using browser's built-in TTS
+// Submit TTS request to the API based on the Python package docs
+const submitTTSRequest = async (
+  text: string,
+  voiceId: string = 'af_heart', // Default voice
+  speed: number = 1.0
+): Promise<string | null> => {
+  try {
+    const clientId = getClientId();
+    
+    console.log(`Submitting TTS request with voice ${voiceId} for text:`, text.substring(0, 30) + (text.length > 30 ? '...' : ''));
+    
+    // Use our server proxy endpoint to submit TTS request
+    const response = await axios.post('/api/tts/submit', {
+      client_id: clientId,
+      text,
+      voice: voiceId,
+      speed
+    });
+    
+    if (response.data && response.data.success) {
+      console.log('TTS request submitted successfully:', response.data);
+      return response.data.id; // Return request ID for status checking
+    } else {
+      console.error('API error in TTS submission:', response.data);
+      return null;
+    }
+  } catch (error) {
+    console.error('Failed to submit TTS request:', error);
+    return null;
+  }
+};
+
+// Check status of TTS request and retrieve audio URL
+const checkTTSStatus = async (clientId: string): Promise<any[]> => {
+  try {
+    // Use our server proxy endpoint to check status
+    const response = await axios.get(`/api/tts/status`, {
+      params: { client_id: clientId }
+    });
+    
+    if (response.data && response.data.results) {
+      return response.data.results;
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to check TTS status:', error);
+    return [];
+  }
+};
+
+// Poll for TTS results until available
+const pollForResults = async (requestId: string, maxAttempts = 12): Promise<string | null> => {
+  const clientId = getClientId();
+  let attempts = 0;
+  
+  // Recursive polling function
+  const poll = async (): Promise<string | null> => {
+    if (attempts >= maxAttempts) {
+      console.warn(`Max polling attempts (${maxAttempts}) reached for TTS request ${requestId}`);
+      return null;
+    }
+    
+    attempts++;
+    
+    try {
+      // Get current status of all requests
+      const results = await checkTTSStatus(clientId);
+      
+      // Find our specific request
+      const ourRequest = results.find((r: any) => r.id === requestId);
+      
+      if (ourRequest && ourRequest.output_url) {
+        console.log(`TTS audio URL found on attempt ${attempts}:`, ourRequest.output_url);
+        return ourRequest.output_url;
+      }
+      
+      console.log(`TTS still processing, attempt ${attempts}/${maxAttempts}...`);
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between checks
+      return poll(); // Recursive call
+    } catch (error) {
+      console.error('Error during TTS polling:', error);
+      return null;
+    }
+  };
+  
+  return poll();
+};
+
+// Main TTS function - tries the API first, falls back to browser TTS if needed
 export const speakText = async (
   text: string,
-  voiceId: string = 'en_us_002',
+  voiceId: string = 'af_heart',
   speed: number = 1.0
 ): Promise<void> => {
   console.log(`Speaking text with voice ${voiceId}:`, text.substring(0, 30) + (text.length > 30 ? '...' : ''));
@@ -326,18 +395,33 @@ export const speakText = async (
   stopSpeech();
   
   try {
-    // Use the browser's built-in TTS with our voice matching system
-    const success = await useBrowserTTSWithVoice(text, voiceId, speed);
+    // Try the API first
+    const requestId = await submitTTSRequest(text, voiceId, speed);
     
-    if (!success) {
-      // If the primary method failed, try the basic browser TTS as fallback
-      console.warn('Enhanced browser TTS failed, trying basic fallback');
-      useBrowserTTS(text, voiceId);
+    if (!requestId) {
+      console.warn('Failed to get TTS request ID, falling back to browser TTS');
+      await useBrowserTTSWithVoice(text, voiceId, speed);
+      return;
     }
+    
+    // Poll for results
+    const audioUrl = await pollForResults(requestId);
+    
+    if (!audioUrl) {
+      console.warn('Failed to get TTS audio URL, falling back to browser TTS');
+      await useBrowserTTSWithVoice(text, voiceId, speed);
+      return;
+    }
+    
+    // Play the audio
+    await playAudio(audioUrl);
   } catch (error) {
-    console.error('TTS error:', error);
-    // Last resort fallback
-    useBrowserTTS(text, voiceId);
+    console.error('TTS process failed:', error);
+    
+    // Fall back to browser TTS
+    if (isSpeaking) { // Only if we haven't already stopped speech
+      await useBrowserTTSWithVoice(text, voiceId, speed);
+    }
   }
 };
 
@@ -353,33 +437,77 @@ export const getVoiceForAgeGroup = (ageGroup: string, language: string = 'en-US'
   const femaleVoices = voices.filter(v => v.gender === 'female');
   const maleVoices = voices.filter(v => v.gender === 'male');
   
+  // Find specific voices by ID (for better matching)
+  const americanFemaleVoices = voices.filter(v => v.id.startsWith('af_'));
+  const americanMaleVoices = voices.filter(v => v.id.startsWith('am_'));
+  const britishFemaleVoices = voices.filter(v => v.id.startsWith('bf_'));
+  const britishMaleVoices = voices.filter(v => v.id.startsWith('bm_'));
+  
   // Select based on age group and availability
   switch (ageGroup) {
     case 'child':
-      // Prefer female voices for children
+      // Specific child-friendly voices
+      if (language === 'en-US') {
+        const childVoice = premiumVoices.find(v => v.id === 'af_nova' || v.id === 'af_sky');
+        if (childVoice) return childVoice;
+        return americanFemaleVoices[0] || femaleVoices[0] || voices[0];
+      } else if (language === 'en-GB') {
+        return britishFemaleVoices[0] || femaleVoices[0] || voices[0];
+      }
       return femaleVoices[0] || voices[0];
       
     case 'teen':
-      // Use female voice for teens
+      // Teen-friendly voices
+      if (language === 'en-US') {
+        const teenVoice = premiumVoices.find(v => v.id === 'af_river' || v.id === 'af_nicole');
+        if (teenVoice) return teenVoice;
+        return americanFemaleVoices[0] || femaleVoices[0] || voices[0];
+      } else if (language === 'en-GB') {
+        return britishFemaleVoices[0] || femaleVoices[0] || voices[0];
+      }
       return femaleVoices[0] || voices[0];
       
     case 'young':
-      // Mix of male/female for young adults
+      // Young adult voices
+      if (language === 'en-US') {
+        const youngVoice = premiumVoices.find(v => v.id === 'am_liam' || v.id === 'af_jessica');
+        if (youngVoice) return youngVoice;
+        return voices[0];
+      } else if (language === 'en-GB') {
+        return voices[0];
+      }
       return voices[0];
       
     case 'adult':
-      // Prefer male voices for adults
+      // Professional adult voices
+      if (language === 'en-US') {
+        const adultVoice = premiumVoices.find(v => v.id === 'am_michael' || v.id === 'am_adam');
+        if (adultVoice) return adultVoice;
+        return americanMaleVoices[0] || maleVoices[0] || voices[0];
+      } else if (language === 'en-GB') {
+        return britishMaleVoices[0] || maleVoices[0] || voices[0];
+      }
       return maleVoices[0] || voices[0];
       
     case 'senior':
-      // Use male voice or British voice for seniors if available
-      if (language === 'en-GB' && voices.length > 0) {
-        return voices[0];
+      // Senior-appropriate voices
+      if (language === 'en-GB') {
+        const seniorVoice = premiumVoices.find(v => v.id === 'bm_george');
+        if (seniorVoice) return seniorVoice;
+        return britishMaleVoices[0] || maleVoices[0] || voices[0];
+      } else if (language === 'en-US') {
+        const seniorVoice = premiumVoices.find(v => v.id === 'am_santa');
+        if (seniorVoice) return seniorVoice;
+        return americanMaleVoices[0] || maleVoices[0] || voices[0];
       }
       return maleVoices[0] || voices[0];
       
     default:
-      // Default to first available voice
+      // Default to a neutral voice
+      if (language === 'en-US') {
+        const defaultVoice = premiumVoices.find(v => v.id === 'af_heart' || v.id === 'am_adam');
+        if (defaultVoice) return defaultVoice;
+      }
       return voices[0];
   }
 };

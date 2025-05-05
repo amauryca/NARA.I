@@ -55,19 +55,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     `;
   };
   
-  // API Proxy for text-to-speech service
+  // API Proxy for image-upscaling.net text-to-speech service
   // Submit a new text-to-speech request
   app.post('/api/tts/submit', async (req: Request, res: Response) => {
     try {
-      // Forward the request to the actual API
+      const { client_id, text, voice, speed } = req.body;
+      
+      if (!client_id || !text || !voice) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required parameters: client_id, text, or voice'
+        });
+      }
+      
+      // Forward the request to the actual API based on the Python package docs
+      // https://pypi.org/project/text-to-speech-api/
       const response = await axios.post(
-        'https://image-upscaling.net/api/tts/submit',
-        req.body,
+        'https://image-upscaling.net/online_tts/api/submit',
+        {
+          client_id,
+          text,
+          voice,
+          speed: speed || 1.0
+        },
         {
           headers: { 'Content-Type': 'application/json' },
-          timeout: 10000 // 10 second timeout
+          timeout: 15000 // 15 second timeout
         }
       );
+      
+      console.log('TTS API response:', response.data);
       
       // Return the API response directly
       return res.status(response.status).json(response.data);
@@ -87,14 +104,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check the status of text-to-speech requests
   app.get('/api/tts/status', async (req: Request, res: Response) => {
     try {
-      // Forward the request to the actual API
+      const clientId = req.query.client_id as string;
+      
+      if (!clientId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required client_id parameter'
+        });
+      }
+      
+      // Forward the request to the actual API based on the Python package docs
       const response = await axios.get(
-        'https://image-upscaling.net/api/tts/status',
+        'https://image-upscaling.net/online_tts/api/status',
         {
-          params: req.query, // Pass along query parameters like client_id
+          params: { client_id: clientId },
           timeout: 10000 // 10 second timeout
         }
       );
+      
+      console.log('TTS status API response:', response.data);
       
       // Return the API response directly
       return res.status(response.status).json(response.data);
@@ -109,6 +137,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: 'Failed to connect to text-to-speech service' 
       });
     }
+  });
+  
+  // Get available voices for TTS API
+  app.get('/api/tts/voices', async (_req: Request, res: Response) => {
+    return res.json({
+      success: true,
+      voices: [
+        // American voices
+        { id: 'am_adam', name: 'Adam (American)', lang: 'en-US', gender: 'male' },
+        { id: 'am_echo', name: 'Echo (American)', lang: 'en-US', gender: 'female' },
+        { id: 'am_eric', name: 'Eric (American)', lang: 'en-US', gender: 'male' },
+        { id: 'am_fenrir', name: 'Fenrir (American)', lang: 'en-US', gender: 'male' },
+        { id: 'am_liam', name: 'Liam (American)', lang: 'en-US', gender: 'male' },
+        { id: 'am_michael', name: 'Michael (American)', lang: 'en-US', gender: 'male' },
+        { id: 'am_onyx', name: 'Onyx (American)', lang: 'en-US', gender: 'male' },
+        { id: 'am_puck', name: 'Puck (American)', lang: 'en-US', gender: 'male' },
+        { id: 'am_santa', name: 'Santa (American)', lang: 'en-US', gender: 'male' },
+        
+        // British voices
+        { id: 'bf_emma', name: 'Emma (British)', lang: 'en-GB', gender: 'female' },
+        { id: 'bf_isabella', name: 'Isabella (British)', lang: 'en-GB', gender: 'female' },
+        { id: 'bf_lily', name: 'Lily (British)', lang: 'en-GB', gender: 'female' },
+        { id: 'bm_george', name: 'George (British)', lang: 'en-GB', gender: 'male' },
+        { id: 'bm_lewis', name: 'Lewis (British)', lang: 'en-GB', gender: 'male' },
+        
+        // American female voices (af_)
+        { id: 'af_alloy', name: 'Alloy (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_aoede', name: 'Aoede (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_bella', name: 'Bella (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_heart', name: 'Heart (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_jessica', name: 'Jessica (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_kore', name: 'Kore (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_nicole', name: 'Nicole (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_nova', name: 'Nova (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_river', name: 'River (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_sarah', name: 'Sarah (American)', lang: 'en-US', gender: 'female' },
+        { id: 'af_sky', name: 'Sky (American)', lang: 'en-US', gender: 'female' }
+      ],
+      languages: [
+        { code: 'en-US', name: 'American English' },
+        { code: 'en-GB', name: 'British English' },
+        { code: 'ja-JP', name: 'Japanese' },
+        { code: 'zh-CN', name: 'Mandarin Chinese' },
+        { code: 'es-ES', name: 'Spanish' },
+        { code: 'fr-FR', name: 'French' },
+        { code: 'it-IT', name: 'Italian' },
+        { code: 'pt-BR', name: 'Brazilian Portuguese' }
+      ]
+    });
   });
 
   // Gemini API route for generating responses
