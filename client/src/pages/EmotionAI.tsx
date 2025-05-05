@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { loadFaceApiModels, detectFace } from "@/lib/face-api";
 import { startSpeechRecognition, stopSpeechRecognition } from "@/lib/speech-api";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
-import { speakText, stopSpeech } from "@/lib/orpheus-tts";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
 import { VoiceSelector } from "@/components/VoiceSelector";
@@ -125,13 +124,8 @@ export default function EmotionAI() {
         setShowEmergencyResources(true);
       }
       
-      // Speak the response using our custom text-to-speech functionality
-      if (textToSpeechEnabled) {
-        // Stop any previous speech before starting new one
-        stopSpeech();
-        // Use the advanced text-to-speech API with selected language and voice
-        speakText(geminiResponse.response, selectedVoiceId, 1.0);
-      }
+      // Text-to-speech functionality has been removed
+      // The UI elements are kept for backward compatibility
     } catch (error) {
       console.error("Error processing emotion data:", error);
       setResponse("I'm having trouble processing right now. Please try again in a moment.");
@@ -269,9 +263,14 @@ export default function EmotionAI() {
           </Button>
         </div>
         
-        <p className="text-lg max-w-3xl mb-6">
+        <p className="text-lg max-w-3xl mb-4">
           Our AI will analyze your expressions and voice, responding with therapeutic insights.
         </p>
+        <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6">
+          <p className="text-amber-700">
+            <strong>Note:</strong> Text-to-speech functionality has been removed from this application.
+          </p>
+        </div>
         
         {/* Settings Panel */}
         {showSettings && (
@@ -291,8 +290,9 @@ export default function EmotionAI() {
                       id="emotion-text-to-speech"
                       checked={textToSpeechEnabled}
                       onCheckedChange={setTextToSpeechEnabled}
+                      disabled={true}
                     />
-                    <Label htmlFor="emotion-text-to-speech">Enable Text-to-Speech</Label>
+                    <Label htmlFor="emotion-text-to-speech" className="text-muted-foreground">Text-to-Speech (Disabled)</Label>
                   </div>
                   
                   {textToSpeechEnabled && (
