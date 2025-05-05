@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { loadFaceApiModels, detectFace } from "@/lib/face-api";
 import { startSpeechRecognition, stopSpeechRecognition } from "@/lib/speech-api";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
-import { speakText, stopSpeech, isSpeechActive, getVoiceForAgeGroup } from "@/lib/kokoro-tts";
+import { speakText, stopSpeech, isSpeechActive, getVoiceForAgeGroup } from "@/lib/edge-tts";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
 import { VoiceSelector } from "@/components/VoiceSelector";
@@ -287,7 +287,7 @@ export default function EmotionAI() {
         </p>
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
           <p className="text-blue-700">
-            <strong>New!</strong> Enhanced text-to-speech functionality is now available with Kokoro TTS! Choose from multiple voices and languages in the settings panel.
+            <strong>New!</strong> Enhanced text-to-speech functionality is now available with Microsoft Edge TTS! Choose from multiple voices and languages in the settings panel. You can test different voices before selecting one.
           </p>
         </div>
         
