@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
-import { Settings } from "lucide-react";
+import { speakText, stopSpeech, isSpeechActive, getVoiceForAgeGroup } from "@/lib/kokoro-tts";
+import { Settings, Volume2, VolumeX } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceSelector } from "@/components/VoiceSelector";
 import { AgeGroup } from "@shared/types/index";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import EmergencyResources from "@/components/EmergencyResources";
 
 interface ChatMessage {
@@ -27,7 +31,9 @@ export default function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
-  // Removed TTS-related states
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("en-US");
+  const [selectedVoice, setSelectedVoice] = useState("tara");
   const [crisisSeverity, setCrisisSeverity] = useState<'severe' | 'moderate' | null>(null);
   const [showEmergencyResources, setShowEmergencyResources] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -83,7 +89,27 @@ export default function Chatbot() {
     return !jailbreakPatterns.some(pattern => pattern.test(input));
   };
   
-  // TTS related code removed
+  // Handle text-to-speech for bot responses
+  const speakBotResponse = (text: string) => {
+    if (voiceEnabled && text) {
+      // Stop any currently playing speech
+      stopSpeech();
+      
+      // If user has selected a specific voice, use it. Otherwise, use age-appropriate voice
+      const voice = selectedVoice || getVoiceForAgeGroup(selectedAgeGroup, selectedLanguage)?.id || 'tara';
+      
+      console.log(`Speaking with voice: ${voice} (language: ${selectedLanguage})`);
+      speakText(text, voice);
+    }
+  };
+  
+  // Toggle text-to-speech functionality
+  const toggleVoice = () => {
+    if (isSpeechActive()) {
+      stopSpeech();
+    }
+    setVoiceEnabled(!voiceEnabled);
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,6 +215,9 @@ export default function Chatbot() {
       };
       
       setMessages(prev => [...prev, botMessage]);
+      
+      // Speak the bot response if TTS is enabled
+      speakBotResponse(response.response);
     } catch (error) {
       console.error("Error getting chatbot response:", error);
       
@@ -240,7 +269,35 @@ export default function Chatbot() {
                 initialAgeGroup={selectedAgeGroup}
               />
               
-              {/* TTS settings removed */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold mb-2">Text-to-Speech</h3>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    {voiceEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                    <span>Voice Output</span>
+                  </div>
+                  <Switch 
+                    checked={voiceEnabled} 
+                    onCheckedChange={toggleVoice}
+                  />
+                </div>
+                
+                {voiceEnabled && (
+                  <div className="space-y-4">
+                    <LanguageSelector 
+                      onLanguageChange={setSelectedLanguage}
+                      initialLanguage={selectedLanguage}
+                    />
+                    
+                    <VoiceSelector 
+                      onVoiceChange={setSelectedVoice}
+                      selectedLanguage={selectedLanguage}
+                      initialVoiceId={selectedVoice}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

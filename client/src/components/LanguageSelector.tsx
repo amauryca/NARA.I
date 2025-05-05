@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { availableLanguages } from '@/lib/kokoro-tts';
 
 interface LanguageSelectorProps {
   onLanguageChange: (languageCode: string) => void;
@@ -7,16 +9,38 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ onLanguageChange, initialLanguage = 'en-US' }: LanguageSelectorProps) {
-  // Just inform the parent component of the default language
+  // Inform the parent component of the language selection on initial render
   useEffect(() => {
     onLanguageChange(initialLanguage);
   }, [initialLanguage, onLanguageChange]);
 
+  // Handle language change
+  const handleLanguageChange = (value: string) => {
+    onLanguageChange(value);
+  };
+
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-muted-foreground italic">
-        Text-to-speech language options have been removed from this application.
+      <Label htmlFor="language-select" className="text-sm font-medium">
+        Language
       </Label>
+      
+      <Select 
+        defaultValue={initialLanguage} 
+        onValueChange={handleLanguageChange}
+      >
+        <SelectTrigger id="language-select" className="w-full">
+          <SelectValue placeholder="Select language" />
+        </SelectTrigger>
+        
+        <SelectContent>
+          {availableLanguages.map((language) => (
+            <SelectItem key={language.code} value={language.code}>
+              {language.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

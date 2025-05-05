@@ -4,7 +4,7 @@ import axios from 'axios';
 const router = Router();
 
 // The URL to the Kokoro-FastAPI service
-const KOKORO_API_URL = process.env.KOKORO_API_URL || 'https://api.example.com/kokoro-tts';
+const KOKORO_API_URL = process.env.KOKORO_API_URL || 'https://kokoro-fastapi-demo.example.com';
 
 // Proxy route for TTS generation
 router.post('/generate', async (req: Request, res: Response) => {

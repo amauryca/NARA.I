@@ -61,7 +61,7 @@ export const kokoroVoices: VoiceOption[] = [
 ];
 
 // Define the Kokoro TTS API URL - this should be the FastAPI endpoint
-const KOKORO_API_URL = process.env.KOKORO_API_URL || 'https://api.kokorotts.example.com';
+const KOKORO_API_URL = import.meta.env.VITE_KOKORO_API_URL || '/api/tts';
 
 // Audio playback state management
 let currentAudio: HTMLAudioElement | null = null;
@@ -145,7 +145,7 @@ export const speakText = async (
     console.log(`Generating speech with Kokoro TTS voice ${voiceId} for text:`, text.substring(0, 30) + (text.length > 30 ? '...' : ''));
     
     // Make request to Kokoro TTS API
-    const response = await axios.post(`${KOKORO_API_URL}/api/tts/generate`, {
+    const response = await axios.post(`${KOKORO_API_URL}/generate`, {
       text,
       voice: voiceId,
       speed,

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { loadFaceApiModels, detectFace } from "@/lib/face-api";
 import { startSpeechRecognition, stopSpeechRecognition } from "@/lib/speech-api";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
+import { speakText, stopSpeech, isSpeechActive, getVoiceForAgeGroup } from "@/lib/kokoro-tts";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
 import { VoiceSelector } from "@/components/VoiceSelector";
@@ -124,8 +125,21 @@ export default function EmotionAI() {
         setShowEmergencyResources(true);
       }
       
-      // Text-to-speech functionality has been removed
-      // The UI elements are kept for backward compatibility
+      // Use Kokoro TTS for text-to-speech if enabled
+      if (textToSpeechEnabled) {
+        // Stop any previous speech before starting new one
+        stopSpeech();
+        
+        // Use auto voice selection based on age group if no specific voice is selected
+        const voiceToUse = selectedVoiceId || getVoiceForAgeGroup(selectedAgeGroup, selectedLanguage)?.id || 'tara';
+        
+        // Speak the response using Kokoro TTS
+        try {
+          await speakText(geminiResponse.response, voiceToUse);
+        } catch (ttsError) {
+          console.error('Text-to-speech error:', ttsError);
+        }
+      }
     } catch (error) {
       console.error("Error processing emotion data:", error);
       setResponse("I'm having trouble processing right now. Please try again in a moment.");
@@ -238,6 +252,11 @@ export default function EmotionAI() {
       recognitionRef.current = null;
     }
     
+    // Stop any active text-to-speech
+    if (textToSpeechEnabled && isSpeechActive()) {
+      stopSpeech();
+    }
+    
     // Update UI
     setIsRunning(false);
     setStatus("Emotion AI stopped. Click Start to begin again.");
@@ -266,9 +285,9 @@ export default function EmotionAI() {
         <p className="text-lg max-w-3xl mb-4">
           Our AI will analyze your expressions and voice, responding with therapeutic insights.
         </p>
-        <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6">
-          <p className="text-amber-700">
-            <strong>Note:</strong> Text-to-speech functionality has been removed from this application.
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+          <p className="text-blue-700">
+            <strong>New!</strong> Enhanced text-to-speech functionality is now available with Kokoro TTS! Choose from multiple voices and languages in the settings panel.
           </p>
         </div>
         
@@ -290,9 +309,8 @@ export default function EmotionAI() {
                       id="emotion-text-to-speech"
                       checked={textToSpeechEnabled}
                       onCheckedChange={setTextToSpeechEnabled}
-                      disabled={true}
                     />
-                    <Label htmlFor="emotion-text-to-speech" className="text-muted-foreground">Text-to-Speech (Disabled)</Label>
+                    <Label htmlFor="emotion-text-to-speech">Text-to-Speech</Label>
                   </div>
                   
                   {textToSpeechEnabled && (
