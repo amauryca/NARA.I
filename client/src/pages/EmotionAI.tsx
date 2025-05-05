@@ -34,21 +34,30 @@ export default function EmotionAI() {
   const recognitionRef = useRef<any>(null);
   const detectionIntervalRef = useRef<number | null>(null);
 
-  // Load face-api models on component mount
+  // Load face-api models and initialize TTS on component mount
   useEffect(() => {
-    const initFaceApi = async () => {
+    const initModels = async () => {
       try {
+        // Initialize face-api models
         setStatus("Loading AI models...");
         await loadFaceApiModels();
         setModelsLoaded(true);
         setStatus("AI models loaded successfully.");
+        
+        // Initialize TTS voices
+        const voicesInitialized = await initVoices();
+        if (voicesInitialized) {
+          console.log('TTS voices initialized successfully in EmotionAI');
+        } else {
+          console.warn('Failed to initialize TTS voices in EmotionAI');
+        }
       } catch (error) {
-        console.error("Error loading face-api models:", error);
+        console.error("Error loading AI models:", error);
         setStatus("Error loading AI models. Please try again.");
       }
     };
 
-    initFaceApi();
+    initModels();
 
     // Cleanup on component unmount
     return () => {
@@ -125,7 +134,7 @@ export default function EmotionAI() {
         setShowEmergencyResources(true);
       }
       
-      // Use Kokoro TTS for text-to-speech if enabled
+      // Use Web Speech API for text-to-speech if enabled
       if (textToSpeechEnabled) {
         // Stop any previous speech before starting new one
         stopSpeech();
@@ -133,7 +142,9 @@ export default function EmotionAI() {
         // Use auto voice selection based on age group if no specific voice is selected
         const voiceToUse = selectedVoiceId || getVoiceForAgeGroup(selectedAgeGroup, selectedLanguage)?.id || 'tara';
         
-        // Speak the response using Kokoro TTS
+        console.log(`Speaking with voice: ${voiceToUse} (language: ${selectedLanguage})`);
+        
+        // Speak the response using Web Speech API
         try {
           await speakText(geminiResponse.response, voiceToUse);
         } catch (ttsError) {

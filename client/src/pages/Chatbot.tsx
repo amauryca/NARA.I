@@ -54,8 +54,18 @@ export default function Chatbot() {
     }
   }, [messages]);
 
-  // Focus on input when component loads
+  // Initialize TTS and focus on input when component loads
   useEffect(() => {
+    // Initialize the TTS voices
+    initVoices().then(success => {
+      if (success) {
+        console.log('TTS voices initialized successfully in Chatbot');
+      } else {
+        console.warn('Failed to initialize TTS voices in Chatbot');
+      }
+    });
+    
+    // Focus on input field
     const inputElement = document.getElementById("chatInput");
     if (inputElement) {
       inputElement.focus();
