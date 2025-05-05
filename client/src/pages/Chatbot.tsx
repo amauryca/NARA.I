@@ -91,6 +91,11 @@ export default function Chatbot() {
     return !jailbreakPatterns.some(pattern => pattern.test(input));
   };
   
+  // Log voice changes for debugging
+  useEffect(() => {
+    console.log('Voice changed to:', selectedVoiceId);
+  }, [selectedVoiceId]);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     

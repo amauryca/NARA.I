@@ -78,7 +78,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // In a real implementation, we would call the Orpheus TTS API here
       // Since we're simulating for now, we'll generate different audio URLs based on the voice and text
-      // For a simulation, we'll map different voices to different sample files
       
       // Map voices to numbers to simulate different voices with different files
       const voiceMap: Record<string, number> = {
@@ -93,40 +92,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'pietro': 17, 'giulia': 18, 'carlo': 19
       };
       
-      // Sample audio URLs for testing - in production, these would come from Orpheus API
-      // We'll use different audio examples to simulate different voices
-      const sampleAudioUrls = [
-        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-1.mp3",
-        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-2.mp3",
-        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-3.mp3",
-        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-1.mp3",
-        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-2.mp3",
-        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-3.mp3",
-        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-4.mp3",
-        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-5.mp3",
-        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-6.mp3",
-        "https://audio-samples.github.io/samples/mp3/commodore64/sample-1.mp3",
-        "https://audio-samples.github.io/samples/mp3/commodore64/sample-2.mp3",
-        "https://audio-samples.github.io/samples/mp3/commodore64/sample-3.mp3",
-        "https://audio-samples.github.io/samples/mp3/commodore64/sample-4.mp3",
-        "https://audio-samples.github.io/samples/mp3/commodore64/sample-5.mp3",
-        "https://audio-samples.github.io/samples/mp3/commodore64/sample-6.mp3",
-        "https://audio-samples.github.io/samples/mp3/mpeg/sample-1.mp3",
-        "https://audio-samples.github.io/samples/mp3/mpeg/sample-2.mp3",
-        "https://audio-samples.github.io/samples/mp3/mpeg/sample-3.mp3",
-        "https://audio-samples.github.io/samples/mp3/mpeg/sample-4.mp3",
-        "https://audio-samples.github.io/samples/mp3/mpeg/sample-5.mp3"
+      // Group audio samples by type to simulate different voices
+      const audioSampleGroups = [
+        // English - US female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-1.mp3",
+          "https://audio-samples.github.io/samples/mp3/blizzard_unbiased/sample-1.mp3",
+          "https://audio-samples.github.io/samples/mp3/blizzard_unbiased/sample-2.mp3"
+        ],
+        // English - US female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-2.mp3",
+          "https://audio-samples.github.io/samples/mp3/blizzard_unbiased/sample-3.mp3",
+          "https://audio-samples.github.io/samples/mp3/blizzard_unbiased/sample-4.mp3"
+        ],
+        // English - US female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-3.mp3",
+          "https://audio-samples.github.io/samples/mp3/blizzard_unbiased/sample-5.mp3",
+          "https://audio-samples.github.io/samples/mp3/blizzard_unbiased/sample-6.mp3"
+        ],
+        // English - US male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-1.mp3",
+          "https://audio-samples.github.io/samples/mp3/flac/sample-1.flac",
+          "https://audio-samples.github.io/samples/mp3/flac/sample-2.flac"
+        ],
+        // English - US male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-2.mp3",
+          "https://audio-samples.github.io/samples/mp3/flac/sample-3.flac",
+          "https://audio-samples.github.io/samples/mp3/flac/sample-4.flac"
+        ],
+        // English - US female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-3.mp3",
+          "https://audio-samples.github.io/samples/mp3/flac/sample-5.flac",
+          "https://audio-samples.github.io/samples/mp3/flac/sample-6.flac"
+        ],
+        // English - US male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-4.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_intro/sample-1.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_intro/sample-2.mp3"
+        ],
+        // English - US female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-5.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_intro/sample-3.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_intro/sample-4.mp3"
+        ],
+        // French - male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-6.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_intro/sample-5.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_intro/sample-6.mp3"
+        ],
+        // French - female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/commodore64/sample-1.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_intro/sample-7.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-1.mp3"
+        ],
+        // French - female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/commodore64/sample-2.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-2.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-3.mp3"
+        ],
+        // German - female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/commodore64/sample-3.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-4.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-5.mp3"
+        ],
+        // German - male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/commodore64/sample-4.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-6.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-7.mp3"
+        ],
+        // German - male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/commodore64/sample-5.mp3",
+          "https://audio-samples.github.io/samples/mp3/maid_outro/sample-8.mp3",
+          "https://audio-samples.github.io/samples/mp3/ogg/sample-1.ogg"
+        ],
+        // Spanish - male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/commodore64/sample-6.mp3",
+          "https://audio-samples.github.io/samples/mp3/ogg/sample-2.ogg",
+          "https://audio-samples.github.io/samples/mp3/ogg/sample-3.ogg"
+        ],
+        // Spanish - male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/mpeg/sample-1.mp3",
+          "https://audio-samples.github.io/samples/mp3/ogg/sample-4.ogg",
+          "https://audio-samples.github.io/samples/mp3/ogg/sample-5.ogg"
+        ],
+        // Spanish - female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/mpeg/sample-2.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-1.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-2.mp3"
+        ],
+        // Italian - male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/mpeg/sample-3.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-3.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-4.mp3"
+        ],
+        // Italian - female voices
+        [
+          "https://audio-samples.github.io/samples/mp3/mpeg/sample-4.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-5.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-6.mp3"
+        ],
+        // Italian - male voices
+        [
+          "https://audio-samples.github.io/samples/mp3/mpeg/sample-5.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-7.mp3",
+          "https://audio-samples.github.io/samples/mp3/piano/sample-8.mp3"
+        ]
       ];
-      
-      // Determine which audio file to use
-      // For a real implementation, we'd use the Orpheus API
+
+      // Determine which voice group to use
       let voiceIndex = voiceMap[voice] || 0;
+      if (voiceIndex >= audioSampleGroups.length) {
+        voiceIndex = voiceIndex % audioSampleGroups.length; // Ensure it stays in bounds
+      }
       
-      // Make sure we stay within array bounds
-      voiceIndex = voiceIndex % sampleAudioUrls.length;
+      // Get the appropriate audio URL group for this voice
+      const audioGroup = audioSampleGroups[voiceIndex];
       
-      // Get the appropriate audio URL for this voice
-      const audioUrl = sampleAudioUrls[voiceIndex];
+      // For each voice, we want different audio based on the content to simulate real speech
+      // We'll use a simple hash function of the text to choose a consistent file for each text
+      const textHash = text.split('').reduce((hash, char) => {
+        const h = typeof hash === 'number' ? hash : 0;
+        const charCode = typeof char === 'string' ? char.charCodeAt(0) : 0;
+        return ((h << 5) - h) + charCode;
+      }, 0);
+      
+      // Get a consistent audio sample within the group based on the text content
+      const audioIndex = Math.abs(textHash) % audioGroup.length;
+      const audioUrl = audioGroup[audioIndex];
       
       // The actual API call would be something like this:
       /*
