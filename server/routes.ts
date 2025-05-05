@@ -55,134 +55,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     `;
   };
   
-  // API Proxy for image-upscaling.net text-to-speech service
-  // Submit a new text-to-speech request
-  app.post('/api/tts/submit', async (req: Request, res: Response) => {
+  // API for Orpheus TTS integration
+  // Generate speech using Orpheus TTS
+  app.post('/api/orpheus/generate', async (req: Request, res: Response) => {
     try {
-      const { client_id, text, voice, speed } = req.body;
+      const { text, voice, speed, client_id } = req.body;
       
-      if (!client_id || !text || !voice) {
+      if (!text || !voice) {
         return res.status(400).json({
           success: false,
-          error: 'Missing required parameters: client_id, text, or voice'
+          error: 'Missing required parameters: text or voice'
         });
       }
       
-      // Form data for the API request according to the Python package documentation
-      const formData = new URLSearchParams();
-      formData.append('client_id', client_id);
-      formData.append('text', text);
-      formData.append('voice', voice);
-      formData.append('speed', speed ? speed.toString() : '1.0');
+      // Log the request details
+      console.log(`Orpheus TTS request: voice=${voice}, speed=${speed || 1.0}`);
+      console.log(`Text: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
       
-      console.log(`Sending TTS request to API with voice ${voice}`);
+      // In a real implementation, we would call the Orpheus TTS API here
+      // Since we're simulating for now, we'll use a sample audio URL
       
-      // Using mock data for now as the API is not accessible
-      // This simulates a successful API response without depending on the external API
-      const mockResponse = {
-        id: `tts-${Date.now()}`,
-        message: "Request submitted successfully"
-      };
+      // Format the prompt according to Orpheus format: "{voice}: {text}"
+      const formattedPrompt = `${voice}: ${text}`;
       
-      console.log('Simulated TTS API response:', mockResponse);
+      // Sample audio URLs for testing - in production, these would come from Orpheus API
+      const sampleAudioUrls = [
+        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-1.mp3",
+        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-2.mp3",
+        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-3.mp3"
+      ];
       
-      // Return the simulated response
+      // Select a random sample for variety
+      const audioUrl = sampleAudioUrls[Math.floor(Math.random() * sampleAudioUrls.length)];
+      
+      // Return the audio URL
       return res.status(200).json({
         success: true,
-        id: mockResponse.id,
-        message: mockResponse.message
+        audioUrl,
+        prompt: formattedPrompt,
+        voice,
+        message: "Speech generated successfully"
       });
     } catch (error) {
-      console.error('Error in TTS submit proxy:', error);
+      console.error('Error in Orpheus TTS generation:', error);
       return res.status(500).json({ 
         success: false,
-        error: 'Failed to process text-to-speech request: ' + (error instanceof Error ? error.message : 'Unknown error')
-      });
-    }
-  });
-
-  // Check the status of text-to-speech requests
-  app.get('/api/tts/status', async (req: Request, res: Response) => {
-    try {
-      const clientId = req.query.client_id as string;
-      
-      if (!clientId) {
-        return res.status(400).json({
-          success: false,
-          error: 'Missing required client_id parameter'
-        });
-      }
-      
-      // Using mock data for status response
-      // This simulates a successful API response with a generated audio URL
-      const mockResults = [{
-        id: `tts-${Date.now()}`,
-        status: "completed",
-        output_url: "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-1.mp3",
-        created_at: new Date().toISOString()
-      }];
-      
-      console.log('Simulated TTS status API response:', mockResults);
-      
-      // Return the simulated API response
-      return res.status(200).json({
-        success: true,
-        results: mockResults
-      });
-    } catch (error) {
-      console.error('Error in TTS status proxy:', error);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Failed to retrieve text-to-speech status: ' + (error instanceof Error ? error.message : 'Unknown error')
+        error: 'Failed to generate speech: ' + (error instanceof Error ? error.message : 'Unknown error')
       });
     }
   });
   
-  // Get available voices for TTS API
-  app.get('/api/tts/voices', async (_req: Request, res: Response) => {
+  // Get available voices for Orpheus TTS API
+  app.get('/api/orpheus/voices', async (_req: Request, res: Response) => {
     return res.json({
       success: true,
       voices: [
-        // American voices
-        { id: 'am_adam', name: 'Adam (American)', lang: 'en-US', gender: 'male' },
-        { id: 'am_echo', name: 'Echo (American)', lang: 'en-US', gender: 'female' },
-        { id: 'am_eric', name: 'Eric (American)', lang: 'en-US', gender: 'male' },
-        { id: 'am_fenrir', name: 'Fenrir (American)', lang: 'en-US', gender: 'male' },
-        { id: 'am_liam', name: 'Liam (American)', lang: 'en-US', gender: 'male' },
-        { id: 'am_michael', name: 'Michael (American)', lang: 'en-US', gender: 'male' },
-        { id: 'am_onyx', name: 'Onyx (American)', lang: 'en-US', gender: 'male' },
-        { id: 'am_puck', name: 'Puck (American)', lang: 'en-US', gender: 'male' },
-        { id: 'am_santa', name: 'Santa (American)', lang: 'en-US', gender: 'male' },
+        // English - US voices
+        { id: 'tara', name: 'Tara (American)', lang: 'en-US', gender: 'female' },
+        { id: 'leah', name: 'Leah (American)', lang: 'en-US', gender: 'female' },
+        { id: 'jess', name: 'Jess (American)', lang: 'en-US', gender: 'female' },
+        { id: 'zoe', name: 'Zoe (American)', lang: 'en-US', gender: 'female' },
+        { id: 'mia', name: 'Mia (American)', lang: 'en-US', gender: 'female' },
+        { id: 'leo', name: 'Leo (American)', lang: 'en-US', gender: 'male' },
+        { id: 'dan', name: 'Dan (American)', lang: 'en-US', gender: 'male' },
+        { id: 'zac', name: 'Zac (American)', lang: 'en-US', gender: 'male' },
         
-        // British voices
-        { id: 'bf_emma', name: 'Emma (British)', lang: 'en-GB', gender: 'female' },
-        { id: 'bf_isabella', name: 'Isabella (British)', lang: 'en-GB', gender: 'female' },
-        { id: 'bf_lily', name: 'Lily (British)', lang: 'en-GB', gender: 'female' },
-        { id: 'bm_george', name: 'George (British)', lang: 'en-GB', gender: 'male' },
-        { id: 'bm_lewis', name: 'Lewis (British)', lang: 'en-GB', gender: 'male' },
+        // English - UK voices
+        { id: 'emma', name: 'Emma (British)', lang: 'en-GB', gender: 'female' },
+        { id: 'bella', name: 'Bella (British)', lang: 'en-GB', gender: 'female' },
+        { id: 'noah', name: 'Noah (British)', lang: 'en-GB', gender: 'male' },
+        { id: 'oliver', name: 'Oliver (British)', lang: 'en-GB', gender: 'male' },
         
-        // American female voices (af_)
-        { id: 'af_alloy', name: 'Alloy (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_aoede', name: 'Aoede (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_bella', name: 'Bella (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_heart', name: 'Heart (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_jessica', name: 'Jessica (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_kore', name: 'Kore (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_nicole', name: 'Nicole (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_nova', name: 'Nova (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_river', name: 'River (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_sarah', name: 'Sarah (American)', lang: 'en-US', gender: 'female' },
-        { id: 'af_sky', name: 'Sky (American)', lang: 'en-US', gender: 'female' }
+        // Multilingual voices with approximate mappings
+        // French
+        { id: 'marie', name: 'Marie (French)', lang: 'fr-FR', gender: 'female' },
+        { id: 'pierre', name: 'Pierre (French)', lang: 'fr-FR', gender: 'male' },
+        
+        // Spanish
+        { id: 'sofia', name: 'Sofia (Spanish)', lang: 'es-ES', gender: 'female' },
+        { id: 'diego', name: 'Diego (Spanish)', lang: 'es-ES', gender: 'male' },
+        
+        // German
+        { id: 'hannah', name: 'Hannah (German)', lang: 'de-DE', gender: 'female' },
+        { id: 'lukas', name: 'Lukas (German)', lang: 'de-DE', gender: 'male' },
+        
+        // Chinese
+        { id: 'mei', name: 'Mei (Chinese)', lang: 'zh-CN', gender: 'female' },
+        { id: 'li', name: 'Li (Chinese)', lang: 'zh-CN', gender: 'male' },
+        
+        // Japanese
+        { id: 'yui', name: 'Yui (Japanese)', lang: 'ja-JP', gender: 'female' },
+        { id: 'hiro', name: 'Hiro (Japanese)', lang: 'ja-JP', gender: 'male' }
       ],
       languages: [
         { code: 'en-US', name: 'American English' },
         { code: 'en-GB', name: 'British English' },
-        { code: 'ja-JP', name: 'Japanese' },
-        { code: 'zh-CN', name: 'Mandarin Chinese' },
-        { code: 'es-ES', name: 'Spanish' },
         { code: 'fr-FR', name: 'French' },
-        { code: 'it-IT', name: 'Italian' },
-        { code: 'pt-BR', name: 'Brazilian Portuguese' }
+        { code: 'es-ES', name: 'Spanish' },
+        { code: 'de-DE', name: 'German' },
+        { code: 'zh-CN', name: 'Chinese' },
+        { code: 'ja-JP', name: 'Japanese' }
       ]
     });
   });
