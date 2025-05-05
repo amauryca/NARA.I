@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react';
-import { getAvailableVoices, VoiceOption, speakText, stopSpeech, isSpeechActive } from '@/lib/orpheus-tts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
+import { VoiceOption } from '@/lib/orpheus-tts';
 import { Label } from '@/components/ui/label';
-import { PlayIcon, Square } from 'lucide-react';
 
 interface VoiceSelectorProps {
   onVoiceChange: (voiceId: string) => void;
