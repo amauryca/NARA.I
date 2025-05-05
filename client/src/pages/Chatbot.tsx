@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
-import { speakText, stopSpeech } from "@/lib/text-to-speech";
+import { speakText, stopSpeech } from "@/lib/orpheus-tts";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
 import { VoiceSelector } from "@/components/VoiceSelector";
@@ -32,7 +32,7 @@ export default function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('af_bella');
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('tara');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
   // Text-to-speech related settings
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);

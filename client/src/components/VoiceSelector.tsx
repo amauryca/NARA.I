@@ -14,7 +14,7 @@ interface VoiceSelectorProps {
 export function VoiceSelector({ 
   onVoiceChange, 
   selectedLanguage, 
-  initialVoiceId = 'en_us_001' // Default to Aria voice
+  initialVoiceId = 'tara' // Default to Tara voice from Orpheus
 }: VoiceSelectorProps) {
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(initialVoiceId);
@@ -160,7 +160,7 @@ export function VoiceSelector({
           </SelectContent>
         </Select>
         <p className="text-xs text-gray-500">
-          Premium voices from Image-Upscaling.net (v2025.0.1)
+          Premium voices from Orpheus TTS (Canopy Labs)
         </p>
       </div>
       

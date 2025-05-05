@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { availableLanguages } from '@/lib/text-to-speech';
+import { availableLanguages } from '@/lib/orpheus-tts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
@@ -31,10 +31,21 @@ export function LanguageSelector({ onLanguageChange, initialLanguage = 'en-US' }
         <SelectContent className="max-h-[300px] overflow-y-auto">
           {/* Group by language regions */}
           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+            English
+          </div>
+          {availableLanguages
+            .filter(lang => ['en-US', 'en-GB'].includes(lang.code))
+            .map((language) => (
+              <SelectItem key={language.code} value={language.code}>
+                {language.name}
+              </SelectItem>
+            ))}
+            
+          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">
             European Languages
           </div>
           {availableLanguages
-            .filter(lang => ['en-US', 'en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT', 'pt-BR', 'pl-PL', 'nl-NL', 'ru-RU', 'tr-TR'].includes(lang.code))
+            .filter(lang => ['fr-FR', 'es-ES', 'de-DE'].includes(lang.code))
             .map((language) => (
               <SelectItem key={language.code} value={language.code}>
                 {language.name}
@@ -45,18 +56,7 @@ export function LanguageSelector({ onLanguageChange, initialLanguage = 'en-US' }
             Asian Languages
           </div>
           {availableLanguages
-            .filter(lang => ['ja-JP', 'zh-CN', 'ko-KR', 'hi-IN'].includes(lang.code))
-            .map((language) => (
-              <SelectItem key={language.code} value={language.code}>
-                {language.name}
-              </SelectItem>
-            ))}
-            
-          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">
-            Middle Eastern Languages
-          </div>
-          {availableLanguages
-            .filter(lang => ['ar-XA'].includes(lang.code))
+            .filter(lang => ['ja-JP', 'zh-CN'].includes(lang.code))
             .map((language) => (
               <SelectItem key={language.code} value={language.code}>
                 {language.name}
@@ -65,7 +65,7 @@ export function LanguageSelector({ onLanguageChange, initialLanguage = 'en-US' }
         </SelectContent>
       </Select>
       <p className="text-xs text-gray-500">
-        Select the language for the AI voice
+        Select the language for the Orpheus TTS voice
       </p>
     </div>
   );
