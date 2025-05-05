@@ -1,6 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import axios from "axios";
+// Import the TTS routes
+import ttsRoutes from "./routes/tts";
 // Remove storage import as it's not being used
 // import { storage } from "./storage";
 
@@ -55,17 +57,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     `;
   };
   
-  // TTS functionality removed
-  app.post('/api/orpheus/generate', async (_req: Request, res: Response) => {
-    return res.status(410).json({ error: 'TTS functionality has been removed' });
+  // Register the Kokoro TTS routes
+  app.use('/api/tts', ttsRoutes);
+  
+  // Legacy Orpheus TTS endpoints - now redirect to Kokoro TTS
+  app.post('/api/orpheus/generate', async (req: Request, res: Response) => {
+    // Redirect to new Kokoro TTS endpoint
+    const newUrl = '/api/tts/generate';
+    console.log(`Redirecting legacy TTS request to ${newUrl}`);
+    req.url = newUrl;
+    ttsRoutes(req, res, () => {});
   });
   
-  // TTS functionality removed
-  app.get('/api/orpheus/voices', async (_req: Request, res: Response) => {
-    return res.status(410).json({ 
-      success: false, 
-      error: 'Text-to-speech functionality has been removed from this application.' 
-    });
+  app.get('/api/orpheus/voices', async (req: Request, res: Response) => {
+    // Redirect to new Kokoro TTS endpoint
+    const newUrl = '/api/tts/voices';
+    console.log(`Redirecting legacy voices request to ${newUrl}`);
+    req.url = newUrl;
+    ttsRoutes(req, res, () => {});
   });
 
   // Gemini API route for generating responses
