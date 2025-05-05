@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
-import { speakText, stopSpeech, isSpeechActive, getVoiceForAgeGroup } from "@/lib/edge-tts";
+import { speakText, stopSpeech, isSpeechActive, getVoiceForAgeGroup, initVoices } from "@/lib/web-speech-tts";
 import { Settings, Volume2, VolumeX } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
@@ -261,7 +261,7 @@ export default function Chatbot() {
         
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
           <p className="text-blue-700">
-            <strong>New!</strong> Enhanced text-to-speech functionality is now available with Microsoft Edge TTS! Enable voice in settings to hear responses spoken aloud. Try the new voice test feature to hear how each voice sounds before selecting it.
+            <strong>New!</strong> Enhanced text-to-speech functionality is now available with your browser's built-in speech synthesis! Enable voice in settings to hear responses spoken aloud. Try the new voice test feature to hear how each voice sounds before selecting it.
           </p>
         </div>
         

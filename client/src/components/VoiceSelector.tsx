@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { VoiceOption, getAvailableVoices } from '@/lib/edge-tts';
-import { testVoice } from '@/lib/edge-tts';
+import { VoiceOption, getAvailableVoices, testVoice, initVoices } from '@/lib/web-speech-tts';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Volume2 } from 'lucide-react';
@@ -19,7 +18,28 @@ export function VoiceSelector({
 }: VoiceSelectorProps) {
   const [voices, setVoices] = useState<VoiceOption[]>([]);
   
-  // Get available voices for the selected language
+  // Initialize voices when component mounts
+  useEffect(() => {
+    const initializeVoices = async () => {
+      await initVoices();
+      const availableVoices = getAvailableVoices(selectedLanguage);
+      setVoices(availableVoices);
+      
+      if (availableVoices.length > 0) {
+        // Check if the initial voice is available
+        const initialVoiceExists = initialVoiceId && availableVoices.some(v => v.id === initialVoiceId);
+        
+        // Use initial voice or default to first available
+        onVoiceChange(initialVoiceExists ? initialVoiceId : availableVoices[0].id);
+      }
+    };
+    
+    initializeVoices();
+    // This effect doesn't need to re-run since it's only for initialization
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
+  // Update voices when language changes
   useEffect(() => {
     const availableVoices = getAvailableVoices(selectedLanguage);
     setVoices(availableVoices);
