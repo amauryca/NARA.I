@@ -76,7 +76,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Since we're simulating for now, we'll use a sample audio URL
       
       // Format the prompt according to Orpheus format: "{voice}: {text}"
+      // This is the required format for the finetune-prod models
       const formattedPrompt = `${voice}: ${text}`;
+      
+      // In a production implementation, we would:
+      // 1. Apply repetition_penalty >= 1.1 for stable generation
+      // 2. Potentially adjust temperature and top_p for speech quality
+      // 3. Track the client ID for consistent voice across requests
       
       // Sample audio URLs for testing - in production, these would come from Orpheus API
       const sampleAudioUrls = [
@@ -87,6 +93,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Select a random sample for variety
       const audioUrl = sampleAudioUrls[Math.floor(Math.random() * sampleAudioUrls.length)];
+      
+      // The actual API call would be something like this:
+      /*
+      const apiResponse = await axios.post('https://api.orpheus-tts.com/generate', {
+        prompt: formattedPrompt,
+        voice: voice,
+        repetition_penalty: 1.1,
+        temperature: 0.8,
+        top_p: 0.9,
+        client_id: client_id  // For voice consistency across sessions
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.ORPHEUS_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const audioUrl = apiResponse.data.audio_url;
+      */
       
       // Return the audio URL
       return res.status(200).json({

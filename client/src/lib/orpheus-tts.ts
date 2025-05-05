@@ -2,15 +2,16 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-// Define available languages
+// Define available languages based on Orpheus TTS supported languages
 export const availableLanguages = [
-  { code: 'en-US', name: 'American English' },
-  { code: 'en-GB', name: 'British English' },
+  { code: 'en-US', name: 'English (US)' },
   { code: 'fr-FR', name: 'French' },
-  { code: 'es-ES', name: 'Spanish' },
   { code: 'de-DE', name: 'German' },
-  { code: 'zh-CN', name: 'Chinese' },
-  { code: 'ja-JP', name: 'Japanese' }
+  { code: 'es-ES', name: 'Spanish' },
+  { code: 'it-IT', name: 'Italian' },
+  { code: 'zh-CN', name: 'Chinese (Mandarin)' },
+  { code: 'ko-KR', name: 'Korean' },
+  { code: 'hi-IN', name: 'Hindi' }
 ];
 
 // Interface for voice options
@@ -21,44 +22,48 @@ export interface VoiceOption {
   gender?: string;
 }
 
-// Define voice options based on Orpheus TTS
+// Define voice options based on Orpheus TTS documentation
 export const orpheusVoices: VoiceOption[] = [
-  // English - US voices
-  { id: 'tara', name: 'Tara (American)', lang: 'en-US', gender: 'female' },
-  { id: 'leah', name: 'Leah (American)', lang: 'en-US', gender: 'female' },
-  { id: 'jess', name: 'Jess (American)', lang: 'en-US', gender: 'female' },
-  { id: 'zoe', name: 'Zoe (American)', lang: 'en-US', gender: 'female' },
-  { id: 'mia', name: 'Mia (American)', lang: 'en-US', gender: 'female' },
-  { id: 'leo', name: 'Leo (American)', lang: 'en-US', gender: 'male' },
-  { id: 'dan', name: 'Dan (American)', lang: 'en-US', gender: 'male' },
-  { id: 'zac', name: 'Zac (American)', lang: 'en-US', gender: 'male' },
+  // English - US voices (in order of conversational realism)
+  { id: 'tara', name: 'Tara', lang: 'en-US', gender: 'female' },
+  { id: 'leah', name: 'Leah', lang: 'en-US', gender: 'female' },
+  { id: 'jess', name: 'Jess', lang: 'en-US', gender: 'female' },
+  { id: 'leo', name: 'Leo', lang: 'en-US', gender: 'male' },
+  { id: 'dan', name: 'Dan', lang: 'en-US', gender: 'male' },
+  { id: 'mia', name: 'Mia', lang: 'en-US', gender: 'female' },
+  { id: 'zac', name: 'Zac', lang: 'en-US', gender: 'male' },
+  { id: 'zoe', name: 'Zoe', lang: 'en-US', gender: 'female' },
   
-  // English - UK voices
-  { id: 'emma', name: 'Emma (British)', lang: 'en-GB', gender: 'female' },
-  { id: 'bella', name: 'Bella (British)', lang: 'en-GB', gender: 'female' },
-  { id: 'noah', name: 'Noah (British)', lang: 'en-GB', gender: 'male' },
-  { id: 'oliver', name: 'Oliver (British)', lang: 'en-GB', gender: 'male' },
+  // French voices (from documentation)
+  { id: 'pierre', name: 'Pierre', lang: 'fr-FR', gender: 'male' },
+  { id: 'amelie', name: 'Amelie', lang: 'fr-FR', gender: 'female' },
+  { id: 'marie', name: 'Marie', lang: 'fr-FR', gender: 'female' },
   
-  // Multilingual voices with approximate mappings
-  // French
-  { id: 'marie', name: 'Marie (French)', lang: 'fr-FR', gender: 'female' },
-  { id: 'pierre', name: 'Pierre (French)', lang: 'fr-FR', gender: 'male' },
+  // German voices
+  { id: 'jana', name: 'Jana', lang: 'de-DE', gender: 'female' },
+  { id: 'thomas', name: 'Thomas', lang: 'de-DE', gender: 'male' },
+  { id: 'max', name: 'Max', lang: 'de-DE', gender: 'male' },
   
-  // Spanish
-  { id: 'sofia', name: 'Sofia (Spanish)', lang: 'es-ES', gender: 'female' },
-  { id: 'diego', name: 'Diego (Spanish)', lang: 'es-ES', gender: 'male' },
+  // Korean voices
+  { id: '유나', name: '유나 (Yuna)', lang: 'ko-KR', gender: 'female' },
+  { id: '준서', name: '준서 (Junseo)', lang: 'ko-KR', gender: 'male' },
   
-  // German
-  { id: 'hannah', name: 'Hannah (German)', lang: 'de-DE', gender: 'female' },
-  { id: 'lukas', name: 'Lukas (German)', lang: 'de-DE', gender: 'male' },
+  // Hindi voices
+  { id: 'ऋतिका', name: 'ऋतिका (Ritika)', lang: 'hi-IN', gender: 'female' },
   
-  // Chinese
-  { id: 'mei', name: 'Mei (Chinese)', lang: 'zh-CN', gender: 'female' },
-  { id: 'li', name: 'Li (Chinese)', lang: 'zh-CN', gender: 'male' },
+  // Mandarin voices
+  { id: '长乐', name: '长乐 (Chang Le)', lang: 'zh-CN', gender: 'female' },
+  { id: '白芷', name: '白芷 (Bai Zhi)', lang: 'zh-CN', gender: 'female' },
   
-  // Japanese
-  { id: 'yui', name: 'Yui (Japanese)', lang: 'ja-JP', gender: 'female' },
-  { id: 'hiro', name: 'Hiro (Japanese)', lang: 'ja-JP', gender: 'male' }
+  // Spanish voices
+  { id: 'javi', name: 'Javi', lang: 'es-ES', gender: 'male' },
+  { id: 'sergio', name: 'Sergio', lang: 'es-ES', gender: 'male' },
+  { id: 'maria', name: 'Maria', lang: 'es-ES', gender: 'female' },
+  
+  // Italian voices
+  { id: 'pietro', name: 'Pietro', lang: 'it-IT', gender: 'male' },
+  { id: 'giulia', name: 'Giulia', lang: 'it-IT', gender: 'female' },
+  { id: 'carlo', name: 'Carlo', lang: 'it-IT', gender: 'male' }
 ];
 
 // Audio playback state management
@@ -133,11 +138,55 @@ const playAudio = (url: string): Promise<void> => {
   });
 };
 
+// Define available emotive tags by language
+type EmotiveTagsType = { [key: string]: string[] };
+
+export const emotiveTags: EmotiveTagsType = {
+  'en-US': ['laugh', 'chuckle', 'sigh', 'cough', 'sniffle', 'groan', 'yawn', 'gasp'],
+  'fr-FR': ['chuckle', 'cough', 'gasp', 'groan', 'laugh', 'sigh', 'sniffle', 'whimper', 'yawn'],
+  'de-DE': ['chuckle', 'cough', 'gasp', 'groan', 'laugh', 'sigh', 'sniffle', 'yawn'],
+  'ko-KR': ['한숨', '헐', '헛기침', '훌쩍', '하품', '낄낄', '신음', '작은 웃음', '기침', '으르렁'],
+  'zh-CN': ['嬉笑', '轻笑', '呻吟', '大笑', '咳嗽', '抽鼻子', '咳'],
+  'es-ES': ['groan', 'chuckle', 'gasp', 'resoplido', 'laugh', 'yawn', 'cough'],
+  'it-IT': ['sigh', 'laugh', 'cough', 'sniffle', 'groan', 'yawn', 'gemito', 'gasp'],
+  'hi-IN': [] // No specific tags listed yet
+};
+
+// Helper to add emotional flavor to text where appropriate
+const addEmotiveTagsToText = (text: string, language: string = 'en-US'): string => {
+  // Get available tags for this language
+  const languageKey = language as keyof typeof emotiveTags;
+  const availableTags = emotiveTags[languageKey] || emotiveTags['en-US'];
+  
+  // For now, we'll just detect simple patterns that might benefit from emotive tags
+  // A more sophisticated implementation could use AI to decide when to add emotional markers
+  let enhancedText = text;
+  
+  // Only add tags if we have suitable content and language support
+  if (availableTags && availableTags.length > 0) {
+    // Look for patterns that might benefit from emotional enhancement
+    const tags = Array.from(availableTags);
+    
+    if (/\bhaha\b|\bhehe\b|\blol\b|\bfunny\b|\bjoke\b|\blaugh\b/i.test(text) && tags.includes('laugh')) {
+      enhancedText = `<laugh> ${enhancedText}`;
+    }
+    if (/\bsigh\b|\btired\b|\bexhausted\b|\bweary\b/i.test(text) && tags.includes('sigh')) {
+      enhancedText = `<sigh> ${enhancedText}`;
+    }
+    if (/\bchuckle\b|\bamusing\b|\bsmile\b/i.test(text) && tags.includes('chuckle')) {
+      enhancedText = `<chuckle> ${enhancedText}`;
+    }
+  }
+  
+  return enhancedText;
+};
+
 // Main TTS function - generates speech using Orpheus TTS via our API
 export const speakText = async (
   text: string,
   voiceId: string = 'tara',
-  speed: number = 1.0
+  speed: number = 1.0,
+  addEmotiveTags: boolean = true
 ): Promise<void> => {
   console.log(`Speaking text with Orpheus voice ${voiceId}:`, text.substring(0, 30) + (text.length > 30 ? '...' : ''));
   
@@ -150,9 +199,19 @@ export const speakText = async (
   }
   
   try {
+    // Find the voice's language
+    const voice = orpheusVoices.find(v => v.id === voiceId);
+    const language = voice?.lang || 'en-US';
+    
+    // Add emotive tags if requested
+    let processedText = text;
+    if (addEmotiveTags) {
+      processedText = addEmotiveTagsToText(text, language);
+    }
+    
     // Submit request to the Orpheus TTS API
     const response = await axios.post('/api/orpheus/generate', {
-      text,
+      text: processedText,
       voice: voiceId,
       speed,
       client_id: getClientId()
