@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
-import { VoiceOption, getAvailableVoices } from '@/lib/kokoro-tts';
+import { VoiceOption, getAvailableVoices } from '@/lib/edge-tts';
+import { testVoice } from '@/lib/edge-tts';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Volume2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface VoiceSelectorProps {
@@ -34,12 +37,31 @@ export function VoiceSelector({
     onVoiceChange(value);
   };
   
+  // Function to test the currently selected voice
+  const handleTestVoice = () => {
+    // Use either the selected voice or default to the first available
+    const currentSelectedVoice = initialVoiceId || (voices.length > 0 ? voices[0].id : 'en-US-AriaNeural');
+    testVoice(currentSelectedVoice);
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="voice-select" className="text-sm font-medium">
-          Voice
-        </Label>
+        <div className="flex justify-between items-center">
+          <Label htmlFor="voice-select" className="text-sm font-medium">
+            Voice
+          </Label>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleTestVoice}
+            className="flex items-center gap-1"
+            title="Test this voice"
+          >
+            <Volume2 size={16} />
+            <span>Test</span>
+          </Button>
+        </div>
         
         {voices.length > 0 ? (
           <Select 

@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import axios from "axios";
 // Import the TTS routes
 import ttsRoutes from "./routes/tts";
+import edgeTtsRoutes from "./routes/edge-tts";
 // Remove storage import as it's not being used
 // import { storage } from "./storage";
 
@@ -59,6 +60,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register the Kokoro TTS routes
   app.use('/api/tts', ttsRoutes);
+  
+  // Register the Edge TTS routes
+  app.use('/api/edge-tts', edgeTtsRoutes);
   
   // Legacy Orpheus TTS endpoints - now redirect to Kokoro TTS
   app.post('/api/orpheus/generate', async (req: Request, res: Response) => {
