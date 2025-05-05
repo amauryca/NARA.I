@@ -255,9 +255,15 @@ export default function Chatbot() {
           </Button>
         </div>
         
-        <p className="text-lg max-w-2xl mb-6">
+        <p className="text-lg max-w-2xl mb-4">
           Chat with our AI therapist for support, guidance, and a compassionate conversation.
         </p>
+        
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+          <p className="text-blue-700">
+            <strong>New!</strong> Enhanced text-to-speech functionality is now available with Kokoro TTS! Enable voice in settings to hear responses spoken aloud.
+          </p>
+        </div>
         
         {/* Settings Panel */}
         {showSettings && (
