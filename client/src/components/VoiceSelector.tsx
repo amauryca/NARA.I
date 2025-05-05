@@ -20,20 +20,30 @@ export function VoiceSelector({
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(initialVoiceId);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
-  // Update voices when language changes
+  // Fetch voices from the server when language changes
   useEffect(() => {
-    const availableVoices = getAvailableVoices(selectedLanguage);
-    setVoices(availableVoices);
-    
-    // If there's no voice for this language or the current voice isn't in this language,
-    // select the first available voice for this language
-    if (availableVoices.length > 0) {
-      const currentVoiceInLanguage = availableVoices.find(v => v.id === selectedVoiceId);
-      if (!currentVoiceInLanguage) {
-        setSelectedVoiceId(availableVoices[0].id);
+    const fetchVoices = async () => {
+      try {
+        // In a real app, we would fetch the available voices from the server
+        // For now, we're using the client-side list
+        const availableVoices = getAvailableVoices(selectedLanguage);
+        setVoices(availableVoices);
+        
+        // If there's no voice for this language or the current voice isn't in this language,
+        // select the first available voice for this language
+        if (availableVoices.length > 0) {
+          const currentVoiceInLanguage = availableVoices.find(v => v.id === selectedVoiceId);
+          if (!currentVoiceInLanguage) {
+            setSelectedVoiceId(availableVoices[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching voices:', error);
       }
-    }
-  }, [selectedLanguage, selectedVoiceId]);
+    };
+    
+    fetchVoices();
+  }, [selectedLanguage]); // Only re-run when language changes
 
   // When voice changes, notify parent component
   useEffect(() => {

@@ -72,27 +72,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Orpheus TTS request: voice=${voice}, speed=${speed || 1.0}`);
       console.log(`Text: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
       
-      // In a real implementation, we would call the Orpheus TTS API here
-      // Since we're simulating for now, we'll use a sample audio URL
-      
       // Format the prompt according to Orpheus format: "{voice}: {text}"
       // This is the required format for the finetune-prod models
       const formattedPrompt = `${voice}: ${text}`;
       
-      // In a production implementation, we would:
-      // 1. Apply repetition_penalty >= 1.1 for stable generation
-      // 2. Potentially adjust temperature and top_p for speech quality
-      // 3. Track the client ID for consistent voice across requests
+      // In a real implementation, we would call the Orpheus TTS API here
+      // Since we're simulating for now, we'll generate different audio URLs based on the voice and text
+      // For a simulation, we'll map different voices to different sample files
+      
+      // Map voices to numbers to simulate different voices with different files
+      const voiceMap: Record<string, number> = {
+        // English voices
+        'tara': 0, 'leah': 1, 'jess': 2, 'leo': 3, 'dan': 4, 'mia': 5, 'zac': 6, 'zoe': 7,
+        // French voices
+        'pierre': 8, 'amelie': 9, 'marie': 10,
+        // German voices
+        'jana': 11, 'thomas': 12, 'max': 13,
+        // Other languages follow the same pattern
+        'javi': 14, 'sergio': 15, 'maria': 16,
+        'pietro': 17, 'giulia': 18, 'carlo': 19
+      };
       
       // Sample audio URLs for testing - in production, these would come from Orpheus API
+      // We'll use different audio examples to simulate different voices
       const sampleAudioUrls = [
         "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-1.mp3",
         "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-2.mp3",
-        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-3.mp3"
+        "https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-3.mp3",
+        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-1.mp3",
+        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-2.mp3",
+        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-3.mp3",
+        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-4.mp3",
+        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-5.mp3",
+        "https://audio-samples.github.io/samples/mp3/electrical_guitar/sample-6.mp3",
+        "https://audio-samples.github.io/samples/mp3/commodore64/sample-1.mp3",
+        "https://audio-samples.github.io/samples/mp3/commodore64/sample-2.mp3",
+        "https://audio-samples.github.io/samples/mp3/commodore64/sample-3.mp3",
+        "https://audio-samples.github.io/samples/mp3/commodore64/sample-4.mp3",
+        "https://audio-samples.github.io/samples/mp3/commodore64/sample-5.mp3",
+        "https://audio-samples.github.io/samples/mp3/commodore64/sample-6.mp3",
+        "https://audio-samples.github.io/samples/mp3/mpeg/sample-1.mp3",
+        "https://audio-samples.github.io/samples/mp3/mpeg/sample-2.mp3",
+        "https://audio-samples.github.io/samples/mp3/mpeg/sample-3.mp3",
+        "https://audio-samples.github.io/samples/mp3/mpeg/sample-4.mp3",
+        "https://audio-samples.github.io/samples/mp3/mpeg/sample-5.mp3"
       ];
       
-      // Select a random sample for variety
-      const audioUrl = sampleAudioUrls[Math.floor(Math.random() * sampleAudioUrls.length)];
+      // Determine which audio file to use
+      // For a real implementation, we'd use the Orpheus API
+      let voiceIndex = voiceMap[voice] || 0;
+      
+      // Make sure we stay within array bounds
+      voiceIndex = voiceIndex % sampleAudioUrls.length;
+      
+      // Get the appropriate audio URL for this voice
+      const audioUrl = sampleAudioUrls[voiceIndex];
       
       // The actual API call would be something like this:
       /*
@@ -113,12 +147,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const audioUrl = apiResponse.data.audio_url;
       */
       
-      // Return the audio URL
+      // Return the audio URL with information about the voice and text
       return res.status(200).json({
         success: true,
         audioUrl,
         prompt: formattedPrompt,
         voice,
+        text: text, // Include the text that was spoken
         message: "Speech generated successfully"
       });
     } catch (error) {
