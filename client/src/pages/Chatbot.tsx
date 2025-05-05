@@ -1,14 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { generateResponseWithCrisisDetection, detectCrisisContent } from "@/lib/gemini-api";
-import { speakText, stopSpeech } from "@/lib/orpheus-tts";
 import { Settings } from "lucide-react";
 import { AgeGroupSelector } from "@/components/AgeGroupSelector";
-import { VoiceSelector } from "@/components/VoiceSelector";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { AgeGroup } from "@shared/types/index";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import EmergencyResources from "@/components/EmergencyResources";
 
@@ -32,10 +27,7 @@ export default function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<AgeGroup>(AgeGroup.ADULT);
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('tara');
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
-  // Text-to-speech related settings
-  const [textToSpeechEnabled, setTextToSpeechEnabled] = useState<boolean>(true);
+  // Removed TTS-related states
   const [crisisSeverity, setCrisisSeverity] = useState<'severe' | 'moderate' | null>(null);
   const [showEmergencyResources, setShowEmergencyResources] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -91,10 +83,7 @@ export default function Chatbot() {
     return !jailbreakPatterns.some(pattern => pattern.test(input));
   };
   
-  // Log voice changes for debugging
-  useEffect(() => {
-    console.log('Voice changed to:', selectedVoiceId);
-  }, [selectedVoiceId]);
+  // TTS related code removed
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,14 +189,6 @@ export default function Chatbot() {
       };
       
       setMessages(prev => [...prev, botMessage]);
-      
-      // Speak the response using our custom text-to-speech functionality
-      if (textToSpeechEnabled) {
-        // Stop any previous speech before starting new one
-        stopSpeech();
-        // Use the advanced text-to-speech API with selected language and voice
-        speakText(response.response, selectedVoiceId, 1.0);
-      }
     } catch (error) {
       console.error("Error getting chatbot response:", error);
       
@@ -259,34 +240,7 @@ export default function Chatbot() {
                 initialAgeGroup={selectedAgeGroup}
               />
               
-              <div className="space-y-4">
-                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                  <h3 className="text-lg font-medium mb-3">Voice Settings</h3>
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Switch
-                      id="text-to-speech"
-                      checked={textToSpeechEnabled}
-                      onCheckedChange={setTextToSpeechEnabled}
-                    />
-                    <Label htmlFor="text-to-speech">Enable Text-to-Speech</Label>
-                  </div>
-                  
-                  {textToSpeechEnabled && (
-                    <div className="space-y-4">
-                      <LanguageSelector 
-                        onLanguageChange={setSelectedLanguage}
-                        initialLanguage={selectedLanguage}
-                      />
-                      
-                      <VoiceSelector
-                        onVoiceChange={setSelectedVoiceId}
-                        selectedLanguage={selectedLanguage}
-                        initialVoiceId={selectedVoiceId}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* TTS settings removed */}
             </div>
           </div>
         )}
